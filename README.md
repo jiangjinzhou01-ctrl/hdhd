@@ -26,7 +26,7 @@ npm run preview
 VITE_BASE_PATH=/仓库名/ npm run build
 ```
 
-根域名托管设置 `VITE_BASE_PATH=/`。更换公开地址时同步更新 `index.html` 的 `og:image`。所有运行时资源均随站点部署，无外部字体和 CDN。
+根域名托管设置 `VITE_BASE_PATH=/`。更换公开地址时同步更新 `index.html` 的 `og:image`。所有运行时资源均随站点部署，无运行时外部字体和 CDN 请求。
 
 ## 发布
 
@@ -48,16 +48,27 @@ Actions 版本于 2026-10-25 对照 GitHub 官方 Pages 文档及 setup-node 官
 
 - `src/story.ts`：姓名、固定日期、事实与主要文案。
 - `src/tokens.css`：夜色、浅色、正文、琥珀色、字体、圆角和层级令牌。
-- `src/App.tsx`：五个语义化场景、封面光影、通话主题和双人文字互动。
+- `src/App.tsx`：五个语义化场景、独立封面构图、通话主题和双卡并肩互动。
 - `src/style.css`：移动端优先排版；360px 到桌面的明确适配。
 - `public/night-still-life*.webp`：原创生成的深夜静物意象，移动版独立裁剪，不是两人的物品实拍。
 - `public/social-preview.png`：结合封面与原创排版的分享图，由浏览器渲染生成，不含人物照片。
 - `ASSETS.md`：素材来源、用途与处理方式。
+- `public/fonts/`：400 / 600 中文字体子集，每个约 33KB，附 SIL OFL 1.1 原文。
+- `design/DESIGN.md`：从内容目标、版式职责到设计系统和验收的设计依据。
+- `design/ui-overview.png`、`design/desktop-cover.png`：由实际运行页面生成的设计总览和桌面封面。
 - `THIRD_PARTY_NOTICES.md`、`licenses/`：锁定版本、上游链接、实际许可证及原文。
 - `public/third-party-licenses.txt`：部署时一同提供的运行时依赖原始许可证。
 - `QA.md`：验证条件和结果。
 
-根据后续反馈，已移除全部贯穿连接线、波形、城市路径、装饰圆环与对应测量逻辑。新版以封面光影、现代中文排版和留白组织五幕。Motion 只用于封面轻微滚动位移、主题文本切换及“我 / 你”文字并肩的反馈；不在每次滚动时更新 React 状态。通话主题使用原生 button 和 aria-pressed；双人准备可以复位；100 元小插曲使用可关闭的原生 details / summary。所有正文默认可读，没有音频或私人相册入口。图片失败时仍可完整阅读，减少动态效果模式下关闭封面位移与局部过渡。
+整套 UI 以“一份今天交到你手里的见面纪念册”为设计主线，重新定义封面、通话、双人、到达地与书信的不同版式。12 栏桌面和 4 栏手机使用同一套色彩、字形和操作规则。没有贯穿线、波形、城市路径或装饰圆环。Motion 只用于局部文本切换与双卡并肩反馈；不在每次滚动时更新 React 状态。通话主题使用原生 button 和 aria-pressed；双人准备可复位；100 元小插曲使用可关闭的原生 details / summary。正文默认可读，图片或字体失败时保留完整回退，减少动态效果模式下状态即时变化。
+
+字体来自 Noto Sans SC 2.004，子集化并改名为 Today Sans，版权和 SIL OFL 1.1 原文保留。常规构建无需下载原始大字体。新增文案时，可在有 fontTools / Brotli 的 Python 环境中，用 `scripts/subset-fonts.py` 重建子集；缺字时浏览器仍使用系统中文字体回退。
+
+运行生产预览后，可生成最新的设计总览和分享图：
+
+```bash
+npm run design:review
+```
 
 目前未提供真实照片、语音，所以没有安装 PhotoSwipe、Lenis 或 Radix Dialog。若以后补充素材，需确认真实来源和使用权限，再添加照片预留尺寸、懒加载与动态导入；不使用假合照。
 

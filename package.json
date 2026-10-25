@@ -10,7 +10,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test:e2e": "node scripts/verify.mjs",
     "notices": "node scripts/notices.mjs",
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/deploy.mjs",
+    "design:review": "node scripts/render-design.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
