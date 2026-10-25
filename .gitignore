@@ -5,3 +5,4 @@ qa/*.png
 qa/*.jpg
 qa/lighthouse*
 qa/results.json
+qa/motion-results.json

@@ -11,7 +11,9 @@
     "test:e2e": "node scripts/verify.mjs",
     "notices": "node scripts/notices.mjs",
     "deploy": "node scripts/deploy.mjs",
-    "design:review": "node scripts/render-design.mjs"
+    "design:review": "node scripts/render-design.mjs",
+    "test:motion": "node scripts/verify-motion.mjs",
+    "design:motion": "node scripts/record-motion.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

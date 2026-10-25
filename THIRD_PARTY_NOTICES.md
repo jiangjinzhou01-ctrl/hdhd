@@ -1,12 +1,12 @@
 # Third-party notices
 
-版本来自提交的 package-lock.json。未修改任何依赖的源码；本项目原创排版、封面静物意象与分享图不属于下列项目。没有真实私人照片或音频，因此未安装 PhotoSwipe、Lenis、Radix Dialog；小惊喜采用原生 details / summary。字体子集与静物图片随站点部署，无运行时外部资源请求、音频、CDN 或付费 API。
+版本来自提交的 package-lock.json。未修改任何依赖的源码；本项目原创排版、日期雕塑、静物意象与分享图不属于下列项目。没有真实私人照片或音频，因此未安装 PhotoSwipe、Lenis、Radix Dialog；小惊喜采用原生 details / summary。字体子集与静物图片随站点部署，无运行时外部资源请求、音频、CDN 或付费 API。
 
 ## 直接采用的项目
 
 - Noto Sans SC 2.004：400 / 600 中文字体子集，修改后族名 Today Sans，SIL OFL 1.1，https://github.com/google/fonts/tree/main/ofl/notosanssc ，原始文本见 licenses/NotoSansSC-OFL.txt。
 - React / React DOM：界面与 DOM 渲染，MIT，https://github.com/facebook/react
-- Motion：局部文字切换与双卡并肩反馈，MIT，https://github.com/motiondivision/motion
+- Motion：首屏、章节滚动、城市揭示与互动反馈，MIT，https://github.com/motiondivision/motion
 - Phosphor Icons：少量统一风格图标，MIT，https://github.com/phosphor-icons/react
 - Vite 与 React 插件：静态构建与本地开发，MIT，https://github.com/vitejs/vite
 - Tailwind CSS v4 与 Vite 集成：基础样式与布局工具，MIT，https://github.com/tailwindlabs/tailwindcss
