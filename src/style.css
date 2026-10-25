@@ -127,7 +127,7 @@ details[open] .details-icon { transform: rotate(45deg); }
 .blessing-wrap { position: relative; margin-top: 60px; padding-top: 37px; border-top: 1px solid #cbd1cf; max-width: 900px; }
 .end-pin { position: absolute; top: -5px; left: 0; width: 9px; height: 9px; border: 1.5px solid var(--amber); background: var(--day); border-radius: 50%; }
 .final-blessing { font-size: clamp(24px, 2.6vw, 35px); line-height: 1.8; font-weight: 400; letter-spacing: -.015em; }
-.final-blessing strong { font-weight: 550; text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; text-underline-offset: 10px; }
+.final-blessing strong { font-weight: 550; white-space: nowrap; text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; text-underline-offset: 10px; }
 .blessing-wire { position: absolute; top: -4px; left: -64px; width: 8px; height: 8px; }
 
 @media (min-width: 1440px) { .opening-layout { max-height: 800px; } }
@@ -231,7 +231,7 @@ details[open] .details-icon { transform: rotate(45deg); }
   .clock-caption { margin-top: 10px; }
   h1 { font-size: 40px; }
   h2 { font-size: 34px; }
-  .duo-copy h2 { font-size: 31px; }
+  .duo-copy h2 { font-size: 34px; }
   .final-blessing { font-size: 22px; }
 }
 @media (max-height: 730px) and (max-width: 767px) {

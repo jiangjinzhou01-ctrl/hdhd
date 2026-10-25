@@ -9,7 +9,11 @@ await mkdir('qa', { recursive: true })
 const report = { url, browser: browser.version(), viewports: [], accessibility: [], errors: [] }
 try {
   for (const width of [360, 390, 430, 1440]) {
-    const page = await browser.newPage({ viewport: { width, height: width < 768 ? 844 : 1000 }, deviceScaleFactor: 1 })
+    const page = await browser.newPage({
+      viewport: { width, height: width < 768 ? 844 : 1000 }, deviceScaleFactor: 1,
+      isMobile: width < 768, hasTouch: width < 768,
+      userAgent: width < 768 ? 'Mozilla/5.0 (Linux; Android 15; iQOO 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36' : undefined,
+    })
     page.on('pageerror', error => report.errors.push(error.message))
     page.on('response', response => { if (response.status() >= 400) report.errors.push(`${response.status()} ${response.url()}`) })
     await page.goto(url, { waitUntil: 'networkidle' })

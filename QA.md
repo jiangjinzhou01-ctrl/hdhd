@@ -40,4 +40,14 @@ Lighthouse 仍提示部分 JavaScript 在首屏没有使用；这包含后续场
 
 没有 iQOO 13 实机、微信 / QQ 内置浏览器或中国大陆节点，因此没有宣称完成真机或国内网络测试。自动无障碍检查不能替代完整人工辅助技术检查。未提供真实照片、语音，相关功能按要求不渲染。
 
-线上部署结果在发布后追加。
+## 线上部署与复验
+
+GitHub Pages 已完成部署，部署提交 `74e7bac31cf302ea31e67a5f7b3798a4356dd3bc`，API 状态为 `built`，错误为空。
+
+线上地址：https://jiangjinzhou01-ctrl.github.io/symmetrical-carnival/phone-to-today/
+
+在线上地址重新运行了完整端到端验证。360 / 390 / 430px 采用 Android Chrome 用户代理、移动视口及触摸模拟；1440px 采用桌面视口。全部通过，无资源 404 或浏览器异常；light / dark 系统偏好与减少动态效果下，axe-core 检查均为 0 violations。分享复制与失败反馈通过。当前线上许可证文本返回 HTTP 200。
+
+网站仅新增到托管仓库的 `phone-to-today/`；对比发布前的提交，目录之外没有任何更改。源码、lockfile、dist、部署配置、README、许可证和本验证记录保存在独立的 `hdhd` 仓库。
+
+线上可达性是本执行环境的访问结果，没有中国大陆节点测试，不能据此承诺所有地区的访问速度。

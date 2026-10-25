@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, rm, mkdir, cp, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, mkdir, cp, writeFile, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -12,15 +12,14 @@ const temporary = await mkdtemp(path.join(tmpdir(), 'phone-to-today-deploy-'))
 try {
   run('gh', ['repo', 'clone', host, temporary, '--', '--depth=1'])
   const destination = path.join(temporary, directory)
-  try {
-    const marker = JSON.parse(await readFile(path.join(destination, '.phone-to-today.json'), 'utf8'))
+  let exists = false
+  try { await stat(destination); exists = true } catch (error) { if (error.code !== 'ENOENT') throw error }
+  if (exists) {
+    let marker
+    try { marker = JSON.parse(await readFile(path.join(destination, '.phone-to-today.json'), 'utf8')) }
+    catch { throw Error('Directory exists without our deployment marker. No files were changed.') }
     if (marker.project !== 'phone-to-today') throw Error('The deployment directory belongs to another project.')
     await rm(destination, { recursive: true })
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error
-    // Existing unrelated directories are never replaced.
-    try { await readFile(path.join(destination, 'index.html')); throw Error('Directory exists without our deployment marker.') }
-    catch (inner) { if (inner.code !== 'ENOENT') throw inner }
   }
   await mkdir(destination, { recursive: true })
   await cp('dist', destination, { recursive: true })
