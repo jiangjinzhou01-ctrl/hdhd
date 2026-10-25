@@ -1,11 +1,11 @@
 # Third-party notices
 
-版本来自提交的 package-lock.json。未修改任何依赖的源码；本项目原创叙事图形和排版不属于下列项目。没有真实照片或音频，因此未安装 PhotoSwipe、Lenis、Radix Dialog；小惊喜采用原生 details / summary。未使用外部字体、图片、音频、CDN 或付费 API。
+版本来自提交的 package-lock.json。未修改任何依赖的源码；本项目原创排版、封面静物意象与分享图不属于下列项目。没有真实私人照片或音频，因此未安装 PhotoSwipe、Lenis、Radix Dialog；小惊喜采用原生 details / summary。未使用外部字体、图片、音频、CDN 或付费 API。
 
 ## 直接采用的项目
 
 - React / React DOM：界面与 DOM 渲染，MIT，https://github.com/facebook/react
-- Motion：滚动线条、城市连接与局部状态反馈，MIT，https://github.com/motiondivision/motion
+- Motion：封面轻微位移、局部文字切换与并肩反馈，MIT，https://github.com/motiondivision/motion
 - Phosphor Icons：少量统一风格图标，MIT，https://github.com/phosphor-icons/react
 - Vite 与 React 插件：静态构建与本地开发，MIT，https://github.com/vitejs/vite
 - Tailwind CSS v4 与 Vite 集成：基础样式与布局工具，MIT，https://github.com/tailwindlabs/tailwindcss

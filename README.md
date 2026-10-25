@@ -48,14 +48,16 @@ Actions 版本于 2026-10-25 对照 GitHub 官方 Pages 文档及 setup-node 官
 
 - `src/story.ts`：姓名、固定日期、事实与主要文案。
 - `src/tokens.css`：夜色、浅色、正文、琥珀色、字体、圆角和层级令牌。
-- `src/App.tsx`：五个语义化场景、统一 StoryShell 与 ConnectionPath。
+- `src/App.tsx`：五个语义化场景、封面光影、通话主题和双人文字互动。
 - `src/style.css`：移动端优先排版；360px 到桌面的明确适配。
-- `public/social-preview.png`：原创排版分享图，由浏览器渲染生成，不含人物照片。
+- `public/night-still-life*.webp`：原创生成的深夜静物意象，移动版独立裁剪，不是两人的物品实拍。
+- `public/social-preview.png`：结合封面与原创排版的分享图，由浏览器渲染生成，不含人物照片。
+- `ASSETS.md`：素材来源、用途与处理方式。
 - `THIRD_PARTY_NOTICES.md`、`licenses/`：锁定版本、上游链接、实际许可证及原文。
 - `public/third-party-licenses.txt`：部署时一同提供的运行时依赖原始许可证。
 - `QA.md`：验证条件和结果。
 
-连接线使用实际 DOM 锚点和 ResizeObserver 计算；Motion 的 motion values 控制滚动关联，不在每次滚动时触发 React 状态。通话主题使用原生 button 和 aria-pressed；双人准备可以复位；100 元小插曲使用可关闭的原生 details / summary。默认可读，没有音频或照片入口。开启减少动态效果时直接呈现完整静态路径和明亮会面场景。
+根据后续反馈，已移除全部贯穿连接线、波形、城市路径、装饰圆环与对应测量逻辑。新版以封面光影、现代中文排版和留白组织五幕。Motion 只用于封面轻微滚动位移、主题文本切换及“我 / 你”文字并肩的反馈；不在每次滚动时更新 React 状态。通话主题使用原生 button 和 aria-pressed；双人准备可以复位；100 元小插曲使用可关闭的原生 details / summary。所有正文默认可读，没有音频或私人相册入口。图片失败时仍可完整阅读，减少动态效果模式下关闭封面位移与局部过渡。
 
 目前未提供真实照片、语音，所以没有安装 PhotoSwipe、Lenis 或 Radix Dialog。若以后补充素材，需确认真实来源和使用权限，再添加照片预留尺寸、懒加载与动态导入；不使用假合照。
 
