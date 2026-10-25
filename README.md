@@ -47,9 +47,9 @@ Actions 版本于 2026-10-25 对照 GitHub 官方 Pages 文档及 setup-node 官
 ## 内容与结构
 
 - `src/story.ts`：姓名、固定日期、事实与主要文案。
-- `src/tokens.css`：夜色、浅色、正文、琥珀色、字体、圆角和层级令牌。
+- `src/tokens.css`：浅灰背景、黑色正文、蓝色操作、字体、圆角和交互动效令牌。
 - `src/App.tsx`：五个语义化场景、见面后的首页构图、通话主题和双卡并肩互动。
-- `src/StoryMotion.tsx`：标题进入、正文交接和基于实际章节位置的滚动位移。
+- `src/StoryMotion.tsx`：统一的渐显、文字与组件进入节奏、按钮反馈和滚动跟随。
 - `src/style.css`：移动端优先排版；360px 到桌面的明确适配。
 - `public/night-still-life*.webp`：原创生成的深夜静物意象，移动版独立裁剪，不是两人的物品实拍。
 - `public/social-preview.png`：结合封面与原创排版的分享图，由浏览器渲染生成，不含人物照片。

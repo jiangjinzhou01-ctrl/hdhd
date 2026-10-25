@@ -18,6 +18,7 @@ try {
     page.on('response', response => { if (response.status() >= 400) report.errors.push(`${response.status()} ${response.url()}`) })
     await page.goto(url, { waitUntil: 'networkidle' })
     await page.evaluate(() => document.fonts.ready)
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-reveal="load"]')].every(node => getComputedStyle(node).opacity === '1'))
     assert(await page.evaluate(() => [...document.fonts].filter(font => font.family.includes('Today Sans')).every(font => font.status === 'loaded')), 'Both local Chinese weights load at the production base path')
     assert.equal(await page.locator('main > section').count(), 5)
     assert.equal(await page.locator('audio, video, iframe').count(), 0)

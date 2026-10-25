@@ -7,6 +7,8 @@
   --link: #0066cc;
   --focus: #0071e3;
   --radius: 28px;
+  --motion-ease: cubic-bezier(.22, 1, .36, 1);
+  --motion-interaction: 240ms;
   --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Today Sans', 'Segoe UI', 'Microsoft YaHei', sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   /* Fixed light product-page art direction. Header 3; keyboard skip link 4. */

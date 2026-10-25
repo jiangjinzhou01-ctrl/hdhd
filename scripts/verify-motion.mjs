@@ -16,7 +16,8 @@ try {
       const picture = document.querySelector('.still-media picture')
       if (headline && picture) {
         first ||= performance.now()
-        window.__motionFrames.push({ headline: getComputedStyle(headline).transform, image: getComputedStyle(picture).transform })
+        const opacity = selector => Number(getComputedStyle(document.querySelector(selector)).opacity)
+        window.__motionFrames.push({ time: performance.now() - first, headline: getComputedStyle(headline).transform, image: getComputedStyle(picture).transform, dedication: opacity('.dedication'), headlineOpacity: Number(getComputedStyle(headline).opacity), description: opacity('.hero-description'), actions: opacity('.hero-actions') })
       }
       if (!first || performance.now() - first < 2000) requestAnimationFrame(sample)
       else window.__motionDone = true
@@ -30,6 +31,10 @@ try {
   report.heroImageStates = new Set(samples.map(frame => frame.image)).size
   assert(report.heroHeadlineStates > 8, 'Headline actually animates on entry')
   assert(report.heroImageStates > 8, 'Photograph actually settles on entry')
+  report.heroFadeOrder = Object.fromEntries(['dedication', 'headlineOpacity', 'description', 'actions'].map(key => [key, samples.find(frame => frame[key] > 0.02)?.time]))
+  const order = Object.values(report.heroFadeOrder)
+  assert(order.every(time => Number.isFinite(time)), 'Every hero text and action fades into view')
+  assert(order.every((time, index) => !index || time > order[index - 1]), 'Hero content enters in reading order')
   await page.locator('#night-calls').evaluate(node => node.scrollIntoView({ behavior: 'instant', block: 'center' }))
   await page.waitForTimeout(150)
   const beforeDrift = await page.locator('.call-memory').evaluate(node => getComputedStyle(node).transform)
@@ -58,6 +63,39 @@ try {
   }
   assert.equal(await page.locator('main p').last().textContent(), '不管那次你有没有考上娄底三中，你永远是我的 best friends。')
   await page.close()
+  // A fresh, actual wheel-scroll tour verifies text AND components, including the
+  // paragraphs near the page end. Once seen, a reveal must remain readable.
+  const tour = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference' })
+  tour.on('pageerror', error => report.errors.push(error.message))
+  await tour.goto(url, { waitUntil: 'networkidle' })
+  await tour.evaluate(() => {
+    const nodes = [...document.querySelectorAll('[data-reveal="scroll"]')]
+    window.__revealTour = nodes.map((node, index) => ({ element: node.id || node.className || `body-${index}`, values: [] }))
+    window.__captureRevealTour = true
+    function sample() {
+      nodes.forEach((node, index) => window.__revealTour[index].values.push(Number(getComputedStyle(node).opacity)))
+      if (window.__captureRevealTour) requestAnimationFrame(sample)
+    }
+    requestAnimationFrame(sample)
+  })
+  const tourHeight = await tour.evaluate(() => document.documentElement.scrollHeight)
+  for (let position = 0; position < tourHeight; position += 400) {
+    await tour.mouse.wheel(0, 400)
+    await tour.waitForTimeout(320)
+  }
+  await tour.waitForTimeout(1100)
+  report.scrollFades = await tour.evaluate(() => {
+    window.__captureRevealTour = false
+    return window.__revealTour.map(({ element, values }) => ({ element, first: values[0], last: values.at(-1), states: new Set(values).size }))
+  })
+  for (const fade of report.scrollFades) {
+    assert.equal(fade.last, 1, `${fade.element} completes its fade`)
+    assert(fade.states > 5, `${fade.element} actually fades while scrolling`)
+  }
+  assert(report.scrollFades.length >= 18, 'Reveal coverage includes headings, body text, component panels, and the letter')
+  await tour.locator('#beginning').evaluate(node => node.scrollIntoView({ behavior: 'instant' }))
+  assert(await tour.locator('[data-reveal="scroll"]').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).opacity === '1')), 'Scrolling back never hides previously read content')
+  await tour.close()
   const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
   await reduced.goto(url, { waitUntil: 'networkidle' })
   const stationary = await reduced.locator('.headline-window strong, .still-media picture, .memory-cards, .city-word, .final-blessing').evaluateAll(nodes => nodes.every(node => {
@@ -65,6 +103,7 @@ try {
     return transform === 'none' || new DOMMatrixReadOnly(transform).isIdentity
   }))
   assert(stationary, 'Reduced motion renders the complete static story immediately')
+  assert(await reduced.locator('[data-reveal]').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).opacity === '1')), 'Reduced motion shows every paragraph and component, even below the viewport')
   report.reducedMotionStatic = stationary
   assert.equal(await reduced.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(245, 245, 247)')
   await reduced.close()
