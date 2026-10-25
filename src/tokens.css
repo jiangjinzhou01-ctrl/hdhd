@@ -1,0 +1,30 @@
+:root {
+  --night: #14191f;
+  --night-surface: #20262d;
+  --day: #f1f3f2;
+  --ink: #1d252c;
+  --amber: #e6b36b;
+  --night-secondary: #b6c0c7;
+  --day-secondary: #535e65;
+  --surface: var(--night);
+  --text: var(--day);
+  --secondary: var(--night-secondary);
+  --hairline: #3b4249;
+  --radius: 12px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  /* Layer scale: backdrop 0, connection 1, content 2, focus-only skip link 3. */
+  color-scheme: dark;
+}
+[data-scene-theme='light'] {
+  --surface: var(--day);
+  --text: var(--ink);
+  --secondary: var(--day-secondary);
+  --hairline: #bfc6c7;
+  color-scheme: light;
+}
+/* Narrative lighting stays the same in either device theme. */
+@media (prefers-color-scheme: light) {
+  :root { --surface: var(--night); --text: var(--day); }
+  [data-scene-theme='light'] { --surface: var(--day); --text: var(--ink); }
+}

@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.local
+qa/*.png
+qa/lighthouse*
+qa/results.json
