@@ -47,11 +47,12 @@ Actions 版本于 2026-10-25 对照 GitHub 官方 Pages 文档及 setup-node 官
 ## 内容与结构
 
 - `src/story.ts`：姓名、固定日期、事实与主要文案。
-- `src/tokens.css`：浅灰背景、黑色正文、蓝色操作、字体、圆角和交互动效令牌。
+- `src/tokens.css`：随系统切换的浅色 / 深色配色、蓝色操作、字体、圆角和交互动效令牌。
 - `src/App.tsx`：五个语义化场景、见面后的首页构图、通话主题和双卡并肩互动。
 - `src/StoryMotion.tsx`：统一的渐显、文字与组件进入节奏、按钮反馈和滚动跟随。
 - `src/style.css`：移动端优先排版；360px 到桌面的明确适配。
 - `public/night-still-life*.webp`：原创生成的深夜静物意象，移动版独立裁剪，不是两人的物品实拍。
+- `public/meeting-date*.webp`：同一构图的银色 / 黑色金属日期意象，按系统主题和屏幕尺寸选择。
 - `public/social-preview.png`：结合封面与原创排版的分享图，由浏览器渲染生成，不含人物照片。
 - `ASSETS.md`：素材来源、用途与处理方式。
 - `public/fonts/`：400 / 600 中文字体子集，每个约 33KB，附 SIL OFL 1.1 原文。
@@ -62,7 +63,7 @@ Actions 版本于 2026-10-25 对照 GitHub 官方 Pages 文档及 setup-node 官
 - `public/third-party-licenses.txt`：部署时一同提供的运行时依赖原始许可证。
 - `QA.md`：验证条件和结果。
 
-当前版本以用户确认的“今天已经见面”为事实起点，参考 Apple 产品页的浅灰背景、黑色大标题、蓝色操作、圆角展示与滚动节奏。首页为“今天，见到你了”，银色 10.25 纪念日期是原创视觉。深夜电话、一起打过的局、长沙见面与最后的信继续来自真实内容。所有页面与交互独立实现，没有使用 Apple 品牌资产或官方 UI 套件。Motion 覆盖首屏、章节、双卡、城市和书信；原生滚动及减少动态效果模式保留。
+当前版本以用户确认的“今天已经见面”为事实起点，参考 Apple 产品页的层级、蓝色操作、圆角展示与滚动节奏。全站随系统在浅灰与石墨黑主题之间切换，日期意象、导航、选择器、中性卡片和信件背景都同步适配。首页为“今天，见到你了”，银色与黑色 10.25 纪念日期都是本项目原创意象。深夜电话、一起打过的局、长沙见面与最后的信继续来自真实内容。所有页面与交互独立实现，没有使用 Apple 品牌资产或官方 UI 套件。Motion 覆盖首屏、章节、双卡、城市和书信；标题逐行揭示，正文和组件轻移渐显，原生滚动及减少动态效果模式保留。深色截图与录屏使用对应的 `-dark` 文件。
 字体来自 Noto Sans SC 2.004，子集化并改名为 Today Sans，版权和 SIL OFL 1.1 原文保留。常规构建无需下载原始大字体。新增文案时，可在有 fontTools / Brotli 的 Python 环境中，用 `scripts/subset-fonts.py` 重建子集；缺字时浏览器仍使用系统中文字体回退。
 
 运行生产预览后，可生成最新的设计总览和分享图：
@@ -76,6 +77,8 @@ npm run design:review
 ```bash
 npm run test:motion
 npm run design:motion
+TEST_SCHEME=dark npm run test:motion
+TEST_SCHEME=dark npm run design:motion
 ```
 
 目前未提供真实照片、语音，所以没有安装 PhotoSwipe、Lenis 或 Radix Dialog。若以后补充素材，需确认真实来源和使用权限，再添加照片预留尺寸、懒加载与动态导入；不使用假合照。

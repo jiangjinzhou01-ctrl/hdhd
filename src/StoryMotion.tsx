@@ -44,8 +44,30 @@ export function Reveal({ children, as = 'div', className, id, tabIndex, 'aria-la
   return <Component id={id} tabIndex={tabIndex} aria-label={ariaLabel} className={className} data-reveal={entry} initial={reduced ? false : { y: distance, opacity: 0 }} animate={reduced || entry === 'load' ? visible : undefined} whileInView={entry === 'scroll' ? visible : undefined} viewport={viewport} transition={storyTransition(reduced, delay)}>{children}</Component>
 }
 
-export function SceneTitle({ children, id, tabIndex, className }: { children: ReactNode; id: string; tabIndex?: number; className?: string }) {
-  return <Reveal as="h2" id={id} tabIndex={tabIndex} className={className}>{children}</Reveal>
+type HeadingProps = {
+  children: string
+  as?: 'h1' | 'h2'
+  id: string
+  tabIndex?: number
+  className?: string
+  entry?: 'scroll' | 'load'
+  delay?: number
+}
+
+export function HeadingReveal({ children, as = 'h2', id, tabIndex, className, entry = 'scroll', delay = 0 }: HeadingProps) {
+  const reduced = useReducedMotion()
+  const Component = motion[as]
+  const Line = as === 'h1' ? motion.strong : motion.span
+  // Observe the stationary heading, not a line moving inside a clipped window.
+  const lines = {
+    hidden: { y: '105%', opacity: 0 },
+    visible: (index: number) => ({ y: '0%', opacity: 1, transition: storyTransition(reduced, delay + index * motionRhythm.step) }),
+  }
+  return <Component id={id} tabIndex={tabIndex} className={className} data-text-reveal={entry} initial={reduced ? false : 'hidden'} animate={reduced || entry === 'load' ? 'visible' : undefined} whileInView={entry === 'scroll' ? 'visible' : undefined} whileFocus="visible" viewport={viewport}>{children.split('\n').map((line, index) => <span className={`text-line-window${as === 'h1' ? ' headline-window' : ''}`} key={index}><Line className="text-line" data-reveal={entry} custom={index} variants={lines}>{line}</Line></span>)}</Component>
+}
+
+export function SceneTitle(props: Omit<HeadingProps, 'as' | 'entry' | 'delay'>) {
+  return <HeadingReveal {...props} />
 }
 
 export function SceneDrift({ children, className, target, distance = 32, scale = 1 }: { children: ReactNode; className?: string; target: RefObject<HTMLElement | null>; distance?: number; scale?: number }) {

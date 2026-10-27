@@ -19,3 +19,9 @@
 meeting-date.webp 与 meeting-date-mobile.webp 来自本项目原创生成的银色 10.25 排版雕塑，原始文件为 /workspace/generated_images/exec-4668abd6-47c9-4abc-85a1-54359d2f8509.png。网站使用裁剪并压缩的 WebP 版本，四周以静态遮罩融合浅灰底。它是纪念日期的设计意象，不是两人的合照或见面实拍。完整日期 2026.10.25 仍以 DOM 文字呈现。
 
 Apple 官网只作版式、留白和动效节奏的参考；没有下载和复用 Apple 的 Logo、产品图、视频或 SF Pro 字体文件。
+
+## 深色日期意象
+
+`meeting-date-dark.webp` 与 `meeting-date-dark-mobile.webp` 是在同一原始日期雕塑基础上制作的独立深色版本。原始编辑结果保留在 `/workspace/generated_images/exec-2b0e23ab-20d9-461a-b039-6e0e780b8e85.png`。构图与 10.25 字样保持一致，材质改为石墨黑金属与银色边缘高光，背景改为近黑摄影棚。它仍然是纪念日期的设计意象。
+
+WebP 文件沿用浅色版本的裁剪范围，桌面宽 1440px、约 30KB，手机宽 800px、约 11KB。通过 picture / source 与带媒体条件的预加载跟随系统颜色偏好选择，首次深色访问只请求相应尺寸的深色图像。所有版本均由本站托管。

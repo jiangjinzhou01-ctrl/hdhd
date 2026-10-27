@@ -4,12 +4,14 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 
+const colorScheme = process.env.TEST_SCHEME || 'light'
+const output = colorScheme === 'dark' ? 'design/motion-preview-dark.webm' : 'design/motion-preview.webm'
 const url = process.env.TEST_URL || 'http://localhost:4173/symmetrical-carnival/phone-to-today/'
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] })
 const temporary = await mkdtemp(path.join(tmpdir(), 'friendship-motion-'))
 await mkdir('design', { recursive: true })
 try {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'no-preference' })
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'no-preference', colorScheme })
   const cdp = await page.context().newCDPSession(page)
   const frames = []
   cdp.on('Page.screencastFrame', frame => {
@@ -49,8 +51,8 @@ try {
   const concat = path.join(temporary, 'frames.txt')
   await writeFile(concat, list.join('\n'))
   await browser.close()
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concat, '-an', '-vf', 'fps=30,format=yuv420p', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-deadline', 'realtime', '-cpu-used', '6', 'design/motion-preview.webm'])
-  console.log(`Recorded ${frames.length} real browser frames to design/motion-preview.webm; capture timing is preserved.`)
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concat, '-an', '-vf', 'fps=30,format=yuv420p', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-deadline', 'realtime', '-cpu-used', '6', output])
+  console.log(`Recorded ${frames.length} real browser frames to ${output}; capture timing is preserved.`)
 } finally {
   await browser.close()
   await rm(temporary, { recursive: true, force: true })

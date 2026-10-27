@@ -3,16 +3,17 @@ import assert from 'node:assert/strict'
 import { writeFile } from 'node:fs/promises'
 
 const url = process.env.TEST_URL || 'http://localhost:4173/symmetrical-carnival/phone-to-today/'
+const colorScheme = process.env.TEST_SCHEME || 'light'
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] })
-const report = { url, errors: [] }
+const report = { url, colorScheme, errors: [] }
 try {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference' })
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference', colorScheme })
   page.on('pageerror', error => report.errors.push(error.message))
   await page.addInitScript(() => {
     window.__motionFrames = []
     let first = 0
     function sample() {
-      const headline = document.querySelector('.headline-window strong')
+      const headline = document.querySelector('.headline-window:last-child strong')
       const picture = document.querySelector('.still-media picture')
       if (headline && picture) {
         first ||= performance.now()
@@ -26,6 +27,8 @@ try {
   })
   await page.goto(url, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => window.__motionDone)
+  report.dateImage = await page.locator('.still-media img').evaluate(node => node.currentSrc.split('/').at(-1))
+  assert.equal(report.dateImage, colorScheme === 'dark' ? 'meeting-date-dark-mobile.webp' : 'meeting-date-mobile.webp')
   const samples = await page.evaluate(() => window.__motionFrames)
   report.heroHeadlineStates = new Set(samples.map(frame => frame.headline)).size
   report.heroImageStates = new Set(samples.map(frame => frame.image)).size
@@ -36,6 +39,20 @@ try {
   assert(order.every(time => Number.isFinite(time)), 'Every hero text and action fades into view')
   assert(order.every((time, index) => !index || time > order[index - 1]), 'Hero content enters in reading order')
   await page.locator('#night-calls').evaluate(node => node.scrollIntoView({ behavior: 'instant', block: 'center' }))
+  const headingOrder = await page.locator('#night-title').evaluate(node => new Promise(resolve => {
+    const lines = [...node.querySelectorAll('.text-line')]
+    const result = lines.map(() => [])
+    const start = performance.now()
+    function sample() {
+      lines.forEach((line, index) => result[index].push({ time: performance.now() - start, opacity: Number(getComputedStyle(line).opacity), transform: getComputedStyle(line).transform }))
+      if (performance.now() - start < 1100) requestAnimationFrame(sample)
+      else resolve(result.map(frames => ({ firstVisible: frames.find(frame => frame.opacity > 0.02)?.time, states: new Set(frames.map(frame => frame.transform)).size, last: frames.at(-1).opacity })))
+    }
+    requestAnimationFrame(sample)
+  }))
+  assert(headingOrder.every(line => line.states > 5 && line.last === 1), 'Each heading line actually rises and becomes fully readable')
+  assert(headingOrder[1].firstVisible > headingOrder[0].firstVisible, 'Heading lines reveal in reading order')
+  report.headingLines = headingOrder
   await page.waitForTimeout(150)
   const beforeDrift = await page.locator('.call-memory').evaluate(node => getComputedStyle(node).transform)
   await page.evaluate(() => window.scrollBy({ top: 160, behavior: 'instant' }))
@@ -65,7 +82,7 @@ try {
   await page.close()
   // A fresh, actual wheel-scroll tour verifies text AND components, including the
   // paragraphs near the page end. Once seen, a reveal must remain readable.
-  const tour = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference' })
+  const tour = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference', colorScheme })
   tour.on('pageerror', error => report.errors.push(error.message))
   await tour.goto(url, { waitUntil: 'networkidle' })
   await tour.evaluate(() => {
@@ -96,7 +113,7 @@ try {
   await tour.locator('#beginning').evaluate(node => node.scrollIntoView({ behavior: 'instant' }))
   assert(await tour.locator('[data-reveal="scroll"]').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).opacity === '1')), 'Scrolling back never hides previously read content')
   await tour.close()
-  const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', colorScheme })
   await reduced.goto(url, { waitUntil: 'networkidle' })
   const stationary = await reduced.locator('.headline-window strong, .still-media picture, .memory-cards, .city-word, .final-blessing').evaluateAll(nodes => nodes.every(node => {
     const transform = getComputedStyle(node).transform
@@ -105,7 +122,7 @@ try {
   assert(stationary, 'Reduced motion renders the complete static story immediately')
   assert(await reduced.locator('[data-reveal]').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).opacity === '1')), 'Reduced motion shows every paragraph and component, even below the viewport')
   report.reducedMotionStatic = stationary
-  assert.equal(await reduced.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(245, 245, 247)')
+  assert.equal(await reduced.evaluate(() => getComputedStyle(document.body).backgroundColor), colorScheme === 'dark' ? 'rgb(8, 8, 10)' : 'rgb(245, 245, 247)')
   await reduced.close()
   assert.deepEqual(report.errors, [])
   console.log(JSON.stringify(report, null, 2))

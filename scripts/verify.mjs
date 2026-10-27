@@ -10,7 +10,7 @@ const report = { url, browser: browser.version(), viewports: [], accessibility: 
 try {
   for (const width of [360, 390, 430, 1440]) {
     const page = await browser.newPage({
-      viewport: { width, height: width < 768 ? 844 : 1000 }, deviceScaleFactor: 1,
+      viewport: { width, height: width < 768 ? 844 : 1000 }, deviceScaleFactor: 1, colorScheme: 'light',
       isMobile: width < 768, hasTouch: width < 768,
       userAgent: width < 768 ? 'Mozilla/5.0 (Linux; Android 15; iQOO 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36' : undefined,
     })
@@ -77,7 +77,7 @@ try {
     const page = await context.newPage()
     await page.goto(url, { waitUntil: 'networkidle' })
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), 'auto')
-    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(245, 245, 247)')
+    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), colorScheme === 'dark' ? 'rgb(8, 8, 10)' : 'rgb(245, 245, 247)')
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
     report.accessibility.push({ colorScheme, violations: results.violations.map(v => ({ id: v.id, impact: v.impact, nodes: v.nodes.map(n => n.target) })) })
     assert.equal(results.violations.length, 0, `Accessibility violations: ${JSON.stringify(results.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })))}`)
@@ -87,6 +87,40 @@ try {
     await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
     await page.screenshot({ path: `qa/reduced-${colorScheme}.png` })
     await context.close()
+  }
+  for (const width of [360, 390, 430, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: width < 768 ? 844 : 1000 }, colorScheme: 'dark', reducedMotion: 'reduce' })
+    const dateRequests = []
+    page.on('pageerror', error => report.errors.push(error.message))
+    page.on('request', request => { if (/meeting-date.*webp/.test(request.url())) dateRequests.push(request.url().split('/').at(-1)) })
+    await page.goto(url, { waitUntil: 'networkidle' })
+    await page.locator('.still-media img').evaluate(node => node.decode())
+    const expectedImage = width < 768 ? 'meeting-date-dark-mobile.webp' : 'meeting-date-dark.webp'
+    assert((await page.locator('.still-media img').evaluate(node => node.currentSrc)).endsWith(expectedImage), 'Dark mode selects the dedicated artwork at the right size')
+    const initialDateRequests = [...new Set(dateRequests)]
+    assert.deepEqual(initialDateRequests, [expectedImage], 'The light image is never preloaded or downloaded during a dark first visit')
+    for (const [selector, expected] of [['body', 'rgb(8, 8, 10)'], ['.night-feature', 'rgb(21, 21, 23)'], ['.duo-stage', 'rgb(21, 21, 23)'], ['.card-me', 'rgb(48, 48, 52)'], ['.final-letter', 'rgb(21, 21, 23)']]) {
+      assert.equal(await page.locator(selector).evaluate(node => getComputedStyle(node).backgroundColor), expected, `${selector} has a coherent dark surface`)
+    }
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width)
+    await page.screenshot({ path: `qa/dark-${width}-top.png` })
+    await page.getByRole('button', { name: '初三', exact: true }).click()
+    await page.getByRole('button', { name: '一起准备', exact: true }).click()
+    assert.equal(await page.getByRole('button', { name: '再准备一次' }).getAttribute('aria-pressed'), 'true')
+    await page.locator('.duo-stage').screenshot({ path: `qa/dark-${width}-duo.png` })
+    await page.locator('summary').click()
+    assert.equal(await page.locator('details').getAttribute('open'), '')
+    await page.locator('#letter').screenshot({ path: `qa/dark-${width}-letter.png` })
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(245, 245, 247)')
+    await page.waitForFunction(() => !document.querySelector('.still-media img').currentSrc.includes('dark'))
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.waitForFunction(() => document.querySelector('.still-media img').currentSrc.includes('dark'))
+    assert.equal(await page.getByRole('button', { name: '初三', exact: true }).getAttribute('aria-pressed'), 'true', 'Changing system theme preserves the current memory and interaction state')
+    assert.equal(await page.getByRole('button', { name: '再准备一次' }).getAttribute('aria-pressed'), 'true')
+    assert.equal(await page.locator('details').getAttribute('open'), '')
+    report.viewports.push({ width, colorScheme: 'dark', passed: true, initialDateRequests })
+    await page.close()
   }
   const share = await browser.newPage({ viewport: { width: 390, height: 844 } })
   await share.addInitScript(() => {
@@ -101,7 +135,7 @@ try {
   await share.getByRole('button', { name: '分享这份回忆' }).click()
   assert.equal(await share.locator('[role="status"]').innerText(), '暂时无法分享，请复制浏览器地址。')
   await share.close()
-  const fallback = await browser.newPage({ viewport: { width: 360, height: 640 }, reducedMotion: 'reduce' })
+  const fallback = await browser.newPage({ viewport: { width: 360, height: 640 }, reducedMotion: 'reduce', colorScheme: 'dark' })
   await fallback.route('**/*.webp', route => route.abort())
   await fallback.goto(url, { waitUntil: 'networkidle' })
   assert.equal(await fallback.locator('.still-media img').count(), 0)

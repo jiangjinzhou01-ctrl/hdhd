@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowDownIcon, ArrowUpRightIcon, CaretRightIcon, CheckIcon, PlusIcon, ShareNetworkIcon } from '@phosphor-icons/react'
 import { story } from './story'
-import { motionRhythm, pressMotion, Reveal, SceneDrift, SceneTitle, storyTransition } from './StoryMotion'
+import { HeadingReveal, motionRhythm, pressMotion, Reveal, SceneDrift, SceneTitle, storyTransition } from './StoryMotion'
 
 const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`
 
@@ -20,11 +20,11 @@ function OpeningScene() {
   }
   return <section ref={scene} id="beginning" className="opening" aria-labelledby="opening-title"><div className="wrap hero-inner">
     <Reveal as="p" className="dedication" entry="load">{story.cover.address}</Reveal>
-    <h1 id="opening-title"><motion.span data-reveal="load" initial={reduced ? false : { y: motionRhythm.distance, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={storyTransition(reduced, motionRhythm.step)}>今天，</motion.span><span className="headline-window"><motion.strong data-reveal="load" initial={reduced ? false : { y: motionRhythm.distance, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={storyTransition(reduced, motionRhythm.step * 2)}>{story.cover.headline}</motion.strong></span></h1>
+    <HeadingReveal as="h1" id="opening-title" entry="load" delay={motionRhythm.step}>{`今天，\n${story.cover.headline}`}</HeadingReveal>
     <Reveal as="p" className="hero-description" entry="load" delay={motionRhythm.step * 3}>{story.cover.memory}</Reveal>
     <Reveal className="hero-actions" entry="load" delay={motionRhythm.step * 4}><motion.button className="enter-button" onClick={enter} {...pressMotion(reduced)}>接起这段回忆<ArrowDownIcon size={17} aria-hidden="true" /></motion.button><a className="hero-letter-link" href="#letter">写给你的话<CaretRightIcon size={16} aria-hidden="true" /></a></Reveal>
     <SceneDrift className="hero-art" target={scene} scale={0.98}>
-      <figure className="date-visual"><div className="still-media">{imageFailed ? <span className="date-fallback">10.25</span> : <motion.picture initial={reduced ? false : { scale: 1.07 }} animate={{ scale: 1 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : 1.2 }}><source media="(max-width: 767px)" srcSet={asset('meeting-date-mobile.webp')} /><img src={asset('meeting-date.webp')} width="1536" height="1024" alt="10.25，见面纪念日期的银色立体排版意象。" fetchPriority="high" onError={() => setImageFailed(true)} /></motion.picture>}</div><motion.figcaption data-reveal="load" initial={reduced ? false : { y: motionRhythm.distance, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={storyTransition(reduced, motionRhythm.step * 4)}><time dateTime={story.dateISO}>{story.date}</time><span>长沙，见面纪念</span></motion.figcaption></figure>
+      <figure className="date-visual"><div className="still-media">{imageFailed ? <span className="date-fallback">10.25</span> : <motion.picture initial={reduced ? false : { scale: 1.07 }} animate={{ scale: 1 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : 1.2 }}><source media="(prefers-color-scheme: dark) and (max-width: 767px)" srcSet={asset('meeting-date-dark-mobile.webp')} /><source media="(prefers-color-scheme: dark)" srcSet={asset('meeting-date-dark.webp')} /><source media="(max-width: 767px)" srcSet={asset('meeting-date-mobile.webp')} /><img src={asset('meeting-date.webp')} width="1536" height="1024" alt="10.25，见面纪念日期的金属立体排版意象。" fetchPriority="high" onError={() => setImageFailed(true)} /></motion.picture>}</div><motion.figcaption data-reveal="load" initial={reduced ? false : { y: motionRhythm.distance, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={storyTransition(reduced, motionRhythm.step * 4)}><time dateTime={story.dateISO}>{story.date}</time><span>长沙，见面纪念</span></motion.figcaption></figure>
     </SceneDrift>
   </div></section>
 }
@@ -89,7 +89,7 @@ function FinalLetter() {
   }
   const [first, second] = story.blessing.split('你永远')
   const [beforeSchool, afterSchool] = first.split('娄底三中')
-  return <section id="letter" className="final-letter scene" aria-labelledby="letter-title"><div className="wrap"><div className="letter-sheet"><Reveal as="p" className="letter-intro">见面之后，还有几句话。</Reveal><SceneTitle id="letter-title">{story.friend}，</SceneTitle><div className="letter-body">{story.letter.map((line, index) => <Reveal as="p" key={line} delay={index % 2 * motionRhythm.step}>{line}</Reveal>)}</div><Reveal className="letter-actions" delay={motionRhythm.step}><a href="#beginning" className="text-button">再读一遍<ArrowUpRightIcon size={16} aria-hidden="true" /></a><button className="text-button" onClick={share}><ShareNetworkIcon size={17} aria-hidden="true" />分享这份回忆</button></Reveal><p className="share-feedback" role="status">{shareMessage}</p><Reveal as="p" className="final-blessing">{beforeSchool}<span className="no-break">娄底三中</span>{afterSchool}<br className="blessing-break" />你永远{second.split('best friends')[0]}<strong>best friends。</strong></Reveal></div></div></section>
+  return <section id="letter" className="final-letter scene" aria-labelledby="letter-title"><div className="wrap"><div className="letter-sheet"><Reveal as="p" className="letter-intro">见面之后，还有几句话。</Reveal><SceneTitle id="letter-title">{`${story.friend}，`}</SceneTitle><div className="letter-body">{story.letter.map((line, index) => <Reveal as="p" key={line} delay={index % 2 * motionRhythm.step}>{line}</Reveal>)}</div><Reveal className="letter-actions" delay={motionRhythm.step}><a href="#beginning" className="text-button">再读一遍<ArrowUpRightIcon size={16} aria-hidden="true" /></a><button className="text-button" onClick={share}><ShareNetworkIcon size={17} aria-hidden="true" />分享这份回忆</button></Reveal><p className="share-feedback" role="status">{shareMessage}</p><Reveal as="p" className="final-blessing">{beforeSchool}<span className="no-break">娄底三中</span>{afterSchool}<br className="blessing-break" />你永远{second.split('best friends')[0]}<strong>best friends。</strong></Reveal></div></div></section>
 }
 
 export function App() {
