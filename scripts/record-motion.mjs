@@ -12,10 +12,12 @@ const temporary = await mkdtemp(path.join(tmpdir(), 'friendship-motion-'))
 await mkdir('design', { recursive: true })
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'no-preference', colorScheme })
+  // Wait for the target viewport to paint before CDP records its first frame.
+  await page.screenshot()
   const cdp = await page.context().newCDPSession(page)
   const frames = []
   cdp.on('Page.screencastFrame', frame => {
-    frames.push({ time: Date.now(), data: frame.data })
+    if (frame.metadata.deviceWidth === 390 && frame.metadata.deviceHeight === 844) frames.push({ time: Date.now(), data: frame.data })
     cdp.send('Page.screencastFrameAck', { sessionId: frame.sessionId }).catch(() => {})
   })
   await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 88, maxWidth: 390, maxHeight: 844, everyNthFrame: 1 })
@@ -39,7 +41,8 @@ try {
   await page.locator('summary').click()
   await page.waitForTimeout(650)
   await show('#letter-title', 1400)
-  await show('.final-blessing', 1500)
+  await show('.final-blessing', 1600)
+  await show('#weekend-note', 1900)
   await cdp.send('Page.stopScreencast')
   const list = []
   for (let i = 0; i < frames.length; i++) {
@@ -51,7 +54,7 @@ try {
   const concat = path.join(temporary, 'frames.txt')
   await writeFile(concat, list.join('\n'))
   await browser.close()
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concat, '-an', '-vf', 'fps=30,format=yuv420p', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-deadline', 'realtime', '-cpu-used', '6', output])
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', concat, '-an', '-vf', 'scale=390:844,fps=30,format=yuv420p', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-deadline', 'realtime', '-cpu-used', '6', output])
   console.log(`Recorded ${frames.length} real browser frames to ${output}; capture timing is preserved.`)
 } finally {
   await browser.close()

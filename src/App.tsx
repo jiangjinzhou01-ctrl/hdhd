@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowDownIcon, ArrowUpRightIcon, CaretRightIcon, CheckIcon, PlusIcon, ShareNetworkIcon } from '@phosphor-icons/react'
 import { story } from './story'
-import { HeadingReveal, motionRhythm, pressMotion, Reveal, SceneDrift, SceneTitle, storyTransition } from './StoryMotion'
+import { focusTransition, HeadingReveal, MemoryCard, motionRhythm, pressMotion, Reveal, SceneDrift, SceneTitle, sharpText, softText, storyTransition } from './StoryMotion'
 
 const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`
 
@@ -36,12 +36,12 @@ function NightCalls() {
   const reduced = useReducedMotion()
   const [beginning, ending] = story.night.themes[selected].text.split('，')
   return <section ref={scene} id="night-calls" className="night-calls scene" aria-labelledby="night-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="night-title" tabIndex={-1}>{story.night.title}</SceneTitle><Reveal delay={motionRhythm.step}><p className="body-copy"><span className="lead">{story.night.lead}</span>{story.night.body}</p></Reveal></div>
+    <div className="chapter-heading"><SceneTitle id="night-title" tabIndex={-1}>{story.night.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}><span className="lead">{story.night.lead}</span>{story.night.body}</Reveal></div>
     <Reveal className="night-feature" delay={motionRhythm.step}>
       <figure className="night-photo">{!imageFailed && <img src={asset('night-still-life.webp')} width="1536" height="1024" alt="深夜电话的静物意象，并非我们的物品实拍。" loading="lazy" onError={() => setImageFailed(true)} />}<figcaption><span>23:00</span><p>十一点了，还没聊完。</p></figcaption></figure>
       <SceneDrift className="call-memory" target={scene}>
         <div className="theme-buttons" role="group" aria-label="回忆里的通话主题">{story.night.themes.map((theme, i) => <motion.button key={theme.label} aria-pressed={selected === i} onClick={() => setSelected(i)} {...pressMotion(reduced)}>{theme.label}</motion.button>)}</div>
-        <div className="memory-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={selected} initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : motionRhythm.interaction }}><span>{beginning}，</span><strong>{ending}</strong></motion.p></AnimatePresence></div>
+        <div className="memory-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={selected} data-focus-reveal initial={reduced ? false : softText(4)} animate={sharpText} exit={{ opacity: 0, filter: reduced ? 'none' : 'blur(3px)', y: -4 }} transition={focusTransition(reduced, 0, 0.34)}><span>{beginning}，</span><strong>{ending}</strong></motion.p></AnimatePresence></div>
       </SceneDrift>
     </Reveal>
   </div></section>
@@ -52,10 +52,10 @@ function DuoMemory() {
   const [ready, setReady] = useState(false)
   const reduced = useReducedMotion()
   return <section ref={scene} id="duo" className="duo-memory scene" aria-labelledby="duo-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="duo-title">{story.duo.title}</SceneTitle><Reveal delay={motionRhythm.step}><p className="body-copy">{story.duo.body}</p></Reveal></div>
+    <div className="chapter-heading"><SceneTitle id="duo-title">{story.duo.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}>{story.duo.body}</Reveal></div>
     <Reveal className={`duo-stage ${ready ? 'is-ready' : ''}`} delay={motionRhythm.step}>
-      <div className="duo-visual" role="group" aria-label="这段回忆里的我和你"><SceneDrift className="memory-cards" target={scene} scale={0.96}><motion.div className="memory-card card-me" animate={{ y: ready ? 0 : -12, rotate: ready ? 0 : -7 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : motionRhythm.interaction }}><span>我</span><small>一起</small></motion.div><motion.div className="memory-card card-you" animate={{ y: ready ? 0 : 12, rotate: ready ? 0 : 7 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : motionRhythm.interaction }}><span>你</span><small>并肩</small></motion.div></SceneDrift><p className="duo-caption">一起打过的很多局</p></div>
-      <div className="duo-controls"><motion.button className="ready-button" aria-pressed={ready} onClick={() => setReady(!ready)} {...pressMotion(reduced)}>{ready ? <CheckIcon size={18} aria-hidden="true" /> : <PlusIcon size={18} aria-hidden="true" />}<span>{ready ? '再准备一次' : '一起准备'}</span></motion.button><div className="duo-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={String(ready)} initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : motionRhythm.interaction }}>{ready ? story.duo.feedback : '有你在，就很熟悉。'}</motion.p></AnimatePresence></div></div>
+      <div className="duo-visual" role="group" aria-label="这段回忆里的我和你"><SceneDrift className="memory-cards" target={scene} scale={0.98}><MemoryCard className="memory-card card-me" index={0} ready={ready}><span>我</span><small>一起</small></MemoryCard><MemoryCard className="memory-card card-you" index={1} ready={ready}><span>你</span><small>并肩</small></MemoryCard></SceneDrift><p className="duo-caption">一起打过的很多局</p></div>
+      <div className="duo-controls"><motion.button className="ready-button" aria-pressed={ready} onClick={() => setReady(!ready)} {...pressMotion(reduced)}>{ready ? <CheckIcon size={18} aria-hidden="true" /> : <PlusIcon size={18} aria-hidden="true" />}<span>{ready ? '再准备一次' : '一起准备'}</span></motion.button><div className="duo-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={String(ready)} data-focus-reveal initial={reduced ? false : softText(4)} animate={sharpText} exit={{ opacity: 0, filter: reduced ? 'none' : 'blur(3px)', y: -4 }} transition={focusTransition(reduced, 0, 0.34)}>{ready ? story.duo.feedback : '有你在，就很熟悉。'}</motion.p></AnimatePresence></div></div>
     </Reveal>
   </div></section>
 }
@@ -68,8 +68,8 @@ function CitiesMeet() {
   const scene = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   return <section ref={scene} id="today" className="cities-meet scene" aria-labelledby="meeting-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="meeting-title">{story.meeting.title}</SceneTitle><Reveal delay={motionRhythm.step}><p className="body-copy">{story.meeting.body}</p></Reveal></div>
-    <div className="arrival-poster" role="group" aria-label="你在邵阳，我在长沙。今天，我们已经在长沙见面了。"><Reveal className="arrival-origin"><p>你从</p><strong>邵阳</strong></Reveal><SceneDrift className="arrival-destination" target={scene}><Reveal as="p">来到</Reveal><motion.div className="city-word-window" initial={reduced ? false : 'before'} whileInView="visible" viewport={{ once: true, amount: 0.15, margin: '0px 0px -32px 0px' }}><motion.span className="city-word" data-reveal="scroll" variants={{ before: { y: motionRhythm.distance, opacity: 0 }, visible: { y: 0, opacity: 1 } }} transition={storyTransition(reduced, motionRhythm.step)}>长沙</motion.span></motion.div><Reveal as="p" className="meeting-note" delay={motionRhythm.step * 2}>这一次，已经见到你本人。</Reveal></SceneDrift></div>
+    <div className="chapter-heading"><SceneTitle id="meeting-title">{story.meeting.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}>{story.meeting.body}</Reveal></div>
+    <div className="arrival-poster" role="group" aria-label="你在邵阳，我在长沙。今天，我们已经在长沙见面了。"><Reveal className="arrival-origin"><p>你从</p><strong>邵阳</strong></Reveal><SceneDrift className="arrival-destination" target={scene}><Reveal as="p">来到</Reveal><motion.div className="city-word-window" initial={reduced ? false : 'before'} whileInView="visible" viewport={{ once: true, amount: 0.15, margin: '0px 0px -32px 0px' }}><motion.span className="city-word" data-reveal="scroll" data-focus-reveal variants={{ before: softText(7), visible: sharpText }} transition={focusTransition(reduced, motionRhythm.step)}>长沙</motion.span></motion.div><Reveal as="p" className="meeting-note" delay={motionRhythm.step * 2}>这一次，已经见到你本人。</Reveal></SceneDrift></div>
     <SmallSurprise />
   </div></section>
 }
@@ -92,6 +92,10 @@ function FinalLetter() {
   return <section id="letter" className="final-letter scene" aria-labelledby="letter-title"><div className="wrap"><div className="letter-sheet"><Reveal as="p" className="letter-intro">见面之后，还有几句话。</Reveal><SceneTitle id="letter-title">{`${story.friend}，`}</SceneTitle><div className="letter-body">{story.letter.map((line, index) => <Reveal as="p" key={line} delay={index % 2 * motionRhythm.step}>{line}</Reveal>)}</div><Reveal className="letter-actions" delay={motionRhythm.step}><a href="#beginning" className="text-button">再读一遍<ArrowUpRightIcon size={16} aria-hidden="true" /></a><button className="text-button" onClick={share}><ShareNetworkIcon size={17} aria-hidden="true" />分享这份回忆</button></Reveal><p className="share-feedback" role="status">{shareMessage}</p><Reveal as="p" className="final-blessing">{beforeSchool}<span className="no-break">娄底三中</span>{afterSchool}<br className="blessing-break" />你永远{second.split('best friends')[0]}<strong>best friends。</strong></Reveal></div></div></section>
 }
 
+function WeekendNote() {
+  return <section id="weekend-note" className="weekend-note" aria-labelledby="weekend-title"><div className="wrap"><Reveal className="weekend-note-card"><p className="weekend-date"><time dateTime={story.weekend.dateISO}>{story.weekend.date}</time></p><SceneTitle id="weekend-title">{story.weekend.title}</SceneTitle><Reveal as="p" className="weekend-copy" delay={motionRhythm.step}>{story.weekend.body}</Reveal></Reveal></div></section>
+}
+
 export function App() {
-  return <><a href="#night-calls" className="skip-link">跳到回忆正文</a><SiteHeader /><main id="story"><OpeningScene /><NightCalls /><DuoMemory /><CitiesMeet /><FinalLetter /></main></>
+  return <><a href="#night-calls" className="skip-link">跳到回忆正文</a><SiteHeader /><main id="story"><OpeningScene /><NightCalls /><DuoMemory /><CitiesMeet /><FinalLetter /><WeekendNote /></main></>
 }

@@ -10,7 +10,7 @@
 
 ## 字体
 
-`public/fonts/today-sans-regular.woff2` 与 `today-sans-semibold.woff2` 由 Noto Sans SC 2.004 的 400 / 600 字重制作，仅保留页面实际需要的字符，每个文件约 33KB。修改后的字体族重命名为 Today Sans；上游版权与 SIL OFL 1.1 许可证保留在字体名称表、`public/fonts/OFL.txt` 和 `licenses/NotoSansSC-OFL.txt`。
+`public/fonts/today-sans-regular.woff2` 与 `today-sans-semibold.woff2` 由 Noto Sans SC 2.004 的 400 / 600 字重制作，仅保留页面实际需要的字符，每个文件约 34KB。修改后的字体族重命名为 Today Sans；上游版权与 SIL OFL 1.1 许可证保留在字体名称表、`public/fonts/OFL.txt` 和 `licenses/NotoSansSC-OFL.txt`。
 
 上游：https://github.com/google/fonts/tree/main/ofl/notosanssc 。原始下载文件的版本字段为 `Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603`。源码中的 `scripts/subset-fonts.py` 记录了子集与重命名方式。常规 npm 构建直接使用已经提交的字体文件，不下载整套字体。
 

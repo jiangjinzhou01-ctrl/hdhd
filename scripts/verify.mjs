@@ -20,13 +20,18 @@ try {
     await page.evaluate(() => document.fonts.ready)
     await page.waitForFunction(() => [...document.querySelectorAll('[data-reveal="load"]')].every(node => getComputedStyle(node).opacity === '1'))
     assert(await page.evaluate(() => [...document.fonts].filter(font => font.family.includes('Today Sans')).every(font => font.status === 'loaded')), 'Both local Chinese weights load at the production base path')
-    assert.equal(await page.locator('main > section').count(), 5)
+    assert.equal(await page.locator('main > section').count(), 6)
     assert.equal(await page.locator('audio, video, iframe').count(), 0)
     assert.equal(await page.locator('img').count(), 2)
     assert(await page.locator('.still-media img').evaluate(node => node.complete && node.naturalWidth > 0))
     assert.equal(await page.locator('main > svg, [data-wire], .connection-path, .waveform, .clock-orbit, .duo-tracks').count(), 0)
     assert(await page.locator('svg').evaluateAll(nodes => nodes.every(node => Number(node.getAttribute('width')) <= 24 && Number(node.getAttribute('height')) <= 24)), 'Only small functional icons remain')
     assert.equal(await page.locator('time').first().getAttribute('datetime'), '2026-10-25')
+    assert.equal(await page.locator('#weekend-note time').getAttribute('datetime'), '2026-10-28')
+    assert.equal(await page.locator('main > section').last().getAttribute('id'), 'weekend-note')
+    assert.equal((await page.locator('#weekend-title').innerText()).replace(/\n/g, ''), '周末记得陪我聊天，一起打和平。')
+    assert((await page.locator('.letter-body').innerText()).includes('中考还在前面'))
+    assert(!/那次|有没有考上/.test(await page.locator('main').innerText()))
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width)
     const buttonBounds = await page.getByRole('button', { name: '接起这段回忆' }).boundingBox()
     assert(buttonBounds.y + buttonBounds.height <= (width < 768 ? 844 : 1000), 'Opening action must fit first viewport')
@@ -34,7 +39,7 @@ try {
     await page.getByRole('button', { name: '接起这段回忆' }).click()
     await page.waitForFunction(() => document.activeElement?.id === 'night-title')
     await page.waitForTimeout(650)
-    for (const [label, expected] of [['初二', '初二的时候，你在。'], ['初三', '初三的时候，你也在。'], ['什么都聊', '很多话，都能跟你说。']]) {
+    for (const [label, expected] of [['初二', '初二的时候，你在。'], ['初三', '现在上初三，你还在。'], ['什么都聊', '很多话，都能跟你说。']]) {
       await page.getByRole('button', { name: label, exact: true }).click()
       await page.waitForFunction(text => document.querySelector('.memory-response')?.textContent === text, expected)
       assert.equal(await page.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed'), 'true')
@@ -46,6 +51,7 @@ try {
     assert.equal(await page.getByRole('button', { name: '一起准备', exact: true }).getAttribute('aria-pressed'), 'false')
     await page.locator('.duo-stage').scrollIntoViewIfNeeded()
     await page.screenshot({ path: `qa/${width}-duo.png` })
+    await page.locator('#weekend-note').screenshot({ path: `qa/${width}-weekend.png` })
     await page.locator('#today').scrollIntoViewIfNeeded()
     await page.waitForTimeout(350)
     await page.screenshot({ path: `qa/${width}-middle.png` })
@@ -61,8 +67,8 @@ try {
     await page.keyboard.press('Enter')
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
     await page.waitForTimeout(650)
-    const lastParagraph = await page.locator('main p').last().innerText()
-    assert.equal(lastParagraph.replace(/\n/g, ''), '不管那次你有没有考上娄底三中，你永远是我的 best friends。')
+    const lastParagraph = await page.locator('.final-blessing').innerText()
+    assert.equal(lastParagraph.replace(/\n/g, ''), '不管你以后能不能考上娄底三中，你永远是我的 best friends。')
     await page.screenshot({ path: `qa/${width}-bottom.png` })
     for (const id of ['#beginning', '#duo', '#letter', '#night-calls', '#letter']) {
       await page.locator(id).evaluate(node => node.scrollIntoView({ behavior: 'instant' }))
@@ -99,7 +105,7 @@ try {
     assert((await page.locator('.still-media img').evaluate(node => node.currentSrc)).endsWith(expectedImage), 'Dark mode selects the dedicated artwork at the right size')
     const initialDateRequests = [...new Set(dateRequests)]
     assert.deepEqual(initialDateRequests, [expectedImage], 'The light image is never preloaded or downloaded during a dark first visit')
-    for (const [selector, expected] of [['body', 'rgb(8, 8, 10)'], ['.night-feature', 'rgb(21, 21, 23)'], ['.duo-stage', 'rgb(21, 21, 23)'], ['.card-me', 'rgb(48, 48, 52)'], ['.final-letter', 'rgb(21, 21, 23)']]) {
+    for (const [selector, expected] of [['body', 'rgb(8, 8, 10)'], ['.night-feature', 'rgb(21, 21, 23)'], ['.duo-stage', 'rgb(21, 21, 23)'], ['.card-me', 'rgb(48, 48, 52)'], ['.final-letter', 'rgb(21, 21, 23)'], ['.weekend-note-card', 'rgb(21, 21, 23)']]) {
       assert.equal(await page.locator(selector).evaluate(node => getComputedStyle(node).backgroundColor), expected, `${selector} has a coherent dark surface`)
     }
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width)
@@ -148,7 +154,7 @@ try {
   await fontFallback.route('**/*.woff2', route => route.abort())
   await fontFallback.goto(url, { waitUntil: 'networkidle' })
   assert.equal(await fontFallback.evaluate(() => document.documentElement.scrollWidth), 390)
-  assert.equal(await fontFallback.locator('.final-blessing').textContent(), '不管那次你有没有考上娄底三中，你永远是我的 best friends。')
+  assert.equal(await fontFallback.locator('.final-blessing').textContent(), '不管你以后能不能考上娄底三中，你永远是我的 best friends。')
   await fontFallback.close()
   assert.deepEqual(report.errors, [])
   console.log(JSON.stringify(report, null, 2))
