@@ -49,7 +49,7 @@ WebKit 已下载，但机器缺少 GTK4、Graphene、Harfbuzz ICU 等运行库�
 
 ## 录制与预览
 
-`artifacts/demo-light/`、`artifacts/demo-dark/` 各有约 27 秒真实录屏、390×844 手机 WebM / MP4、1080×1920 竖版 MP4、8 个独立操作镜头、shots.json 与 SHOTS.md。竖版使用留边保留完整内容，没有用静态图生成交互。镜头包含加载、真实点击接起、主题切换、双卡靠近与复位、城市、信件和结尾。关键帧已人工查看，视频编码与尺寸由 ffprobe 验证。
+`artifacts/demo-light/`、`artifacts/demo-dark/` 各有约半分钟真实录屏、390×844 手机 WebM / MP4、1080×1920 竖版 MP4、8 个独立操作镜头、shots.json 与 SHOTS.md。竖版使用留边保留完整内容，没有用静态图生成交互。镜头包含加载、真实点击接起、主题切换、双卡靠近与复位、城市、信件和结尾。关键帧已人工查看，视频编码与尺寸由 ffprobe 验证。
 
 `artifacts/review-private/`、`artifacts/review-demo/` 包含两套主题的实际章节图、手机 / 桌面封面与总览。V1 的 design 原图没有覆盖。
 

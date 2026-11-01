@@ -14,7 +14,14 @@ source = Path(sys.argv[1])
 corpus = "".join(p.read_text() for p in (root / "src").glob("*.*") if p.suffix in {".tsx", ".ts"})
 corpus += "".join(p.read_text() for p in (root / "stories").rglob("*.json"))
 if os.environ.get("STORY_FILE"):
-    corpus += Path(os.environ["STORY_FILE"]).read_text()
+    customer = Path(os.environ["STORY_FILE"])
+    customer_text = customer.read_text()
+    corpus += customer_text
+    letter_name = json.loads(customer_text).get("letterFile")
+    if letter_name:
+        if Path(letter_name).name != letter_name or ".." in letter_name or not letter_name.endswith(".json"):
+            raise ValueError("letterFile must be a JSON filename beside the story")
+        corpus += (customer.parent / letter_name).read_text()
 corpus += (root / "index.html").read_text() + "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?¥＋ /-（）「」"
 output = root / "public" / "fonts"
 output.mkdir(parents=True, exist_ok=True)

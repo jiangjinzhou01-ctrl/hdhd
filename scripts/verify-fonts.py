@@ -15,7 +15,10 @@ def strings(value):
 data = json.loads(story.read_text())
 text = ''.join(strings(data))
 if data.get('letterFile'):
-    text += ''.join(strings(json.loads((story.parent / data['letterFile']).read_text())))
+    letter_name = data['letterFile']
+    if Path(letter_name).name != letter_name or '..' in letter_name or not letter_name.endswith('.json'):
+        raise ValueError('letterFile must be a JSON filename beside the story')
+    text += ''.join(strings(json.loads((story.parent / letter_name).read_text())))
 chars = set(text)
 # Verify Chinese and meaningful punctuation; ASCII paths and control characters are not typography.
 chars = {ord(c) for c in chars if '\u3000' <= c <= '\u9fff' or c in '。，“”‘’、—…'}
