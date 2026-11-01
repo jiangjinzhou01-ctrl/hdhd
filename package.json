@@ -1,19 +1,24 @@
 {
   "name": "phone-to-today",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test:e2e": "node scripts/verify.mjs",
+    "test:e2e": "node scripts/verify-v2.mjs",
     "notices": "node scripts/notices.mjs",
     "deploy": "node scripts/deploy.mjs",
     "design:review": "node scripts/render-design.mjs",
     "test:motion": "node scripts/verify-motion.mjs",
-    "design:motion": "node scripts/record-motion.mjs"
+    "design:motion": "node scripts/record-motion.mjs",
+    "build:demo": "STORY_FILE=stories/demo/story.json VITE_BASE_PATH=/ npm run build",
+    "dev:demo": "STORY_FILE=stories/demo/story.json VITE_BASE_PATH=/ npm run dev",
+    "preview:demo": "STORY_FILE=stories/demo/story.json VITE_BASE_PATH=/ npm run preview",
+    "test:config": "node scripts/verify-config.mjs",
+    "test:v2": "node scripts/verify-v2.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

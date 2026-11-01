@@ -6,6 +6,7 @@ import path from 'node:path'
 // Publish only this dedicated directory; preserve every other file in the host.
 const host = 'jiangjinzhou01-ctrl/symmetrical-carnival'
 const directory = 'phone-to-today'
+if (process.env.ALLOW_PRODUCTION_DEPLOY !== 'yes') throw Error('V2 is review-only. This command changes the existing production site. Obtain explicit deployment authorization, then set ALLOW_PRODUCTION_DEPLOY=yes.')
 const run = (command, args, cwd = process.cwd()) => execFileSync(command, args, { cwd, stdio: 'inherit', env: process.env })
 run('npm', ['run', 'build'])
 const temporary = await mkdtemp(path.join(tmpdir(), 'phone-to-today-deploy-'))
@@ -22,7 +23,7 @@ try {
     await rm(destination, { recursive: true })
   }
   await mkdir(destination, { recursive: true })
-  await cp('dist', destination, { recursive: true })
+  await cp('dist-v2/private', destination, { recursive: true })
   await writeFile(path.join(destination, '.phone-to-today.json'), JSON.stringify({ project: 'phone-to-today', source: 'https://github.com/jiangjinzhou01-ctrl/hdhd' }))
   run('git', ['config', 'user.name', 'jiangjinzhou01-ctrl'], temporary)
   run('git', ['config', 'user.email', '310395594+jiangjinzhou01-ctrl@users.noreply.github.com'], temporary)

@@ -6,3 +6,10 @@ qa/*.jpg
 qa/lighthouse*
 qa/results.json
 qa/motion-results.json
+
+dist-v2/
+customers/*
+!customers/README.md
+qa/v2/
+qa/v1/
+artifacts/

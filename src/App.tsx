@@ -1,101 +1,692 @@
-import { useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowDownIcon, ArrowUpRightIcon, CaretRightIcon, CheckIcon, PlusIcon, ShareNetworkIcon } from '@phosphor-icons/react'
-import { story } from './story'
-import { focusTransition, HeadingReveal, MemoryCard, motionRhythm, pressMotion, Reveal, SceneDrift, SceneTitle, sharpText, softText, storyTransition } from './StoryMotion'
+import { useEffect, useRef, useState } from "react";
+import { animate, motion } from "motion/react";
+import {
+  ArrowDownIcon,
+  ArrowUpRightIcon,
+  CaretRightIcon,
+  CheckIcon,
+  PlusIcon,
+  ShareNetworkIcon,
+} from "@phosphor-icons/react";
+import { story, asset, firstScene, firstTitle } from "./story";
+import type { ImageAsset } from "./story-schema";
+import {
+  useReducedMotion,
+  HeadingReveal,
+  ImageTransition,
+  InteractionMotion,
+  MemoryCard,
+  motionRhythm,
+  pressMotion,
+  Reveal,
+  SceneDrift,
+  SceneTitle,
+  ScrollScene,
+  SceneTransition,
+} from "./StoryMotion";
 
-const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`
-
+function StoryImage({
+  image,
+  priority = false,
+  onFailure,
+}: {
+  image: ImageAsset;
+  priority?: boolean;
+  onFailure: () => void;
+}) {
+  const theme = story.theme;
+  return (
+    <picture>
+      {theme === "system" && image.darkMobile && (
+        <source
+          media="(prefers-color-scheme: dark) and (max-width: 767px)"
+          srcSet={asset(image.darkMobile)}
+        />
+      )}
+      {theme === "system" && image.dark && (
+        <source
+          media="(prefers-color-scheme: dark)"
+          srcSet={asset(image.dark)}
+        />
+      )}
+      {(theme === "dark" ? image.darkMobile || image.mobile : image.mobile) && (
+        <source
+          media="(max-width: 767px)"
+          srcSet={asset(
+            theme === "dark"
+              ? image.darkMobile || image.mobile!
+              : image.mobile!,
+          )}
+        />
+      )}
+      <img
+        src={asset(theme === "dark" ? image.dark || image.src : image.src)}
+        width="1536"
+        height="1024"
+        alt={image.alt}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        onError={onFailure}
+      />
+    </picture>
+  );
+}
 function SiteHeader() {
-  return <header className="site-header"><div className="wrap masthead"><a href="#beginning" className="site-name">电话那头，今天见</a><nav aria-label="故事导航"><a href="#night-calls">回忆</a><a href="#today">今天</a><a href="#letter">写给你</a></nav></div></header>
+  return (
+    <header className="site-header">
+      <div className="wrap masthead">
+        <a href="#beginning" className="site-name">
+          {story.navigation.name}
+        </a>
+        <nav aria-label="故事导航">
+          {story.night && <a href="#night-calls">{story.navigation.night}</a>}
+          {story.meeting && <a href="#today">{story.navigation.meeting}</a>}
+          <a href="#letter">{story.navigation.letter}</a>
+        </nav>
+      </div>
+    </header>
+  );
 }
 
 function OpeningScene() {
-  const scene = useRef<HTMLElement>(null)
-  const [imageFailed, setImageFailed] = useState(false)
-  const reduced = useReducedMotion()
-  function enter() {
-    document.getElementById('night-calls')?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth' })
-    document.getElementById('night-title')?.focus({ preventScroll: true })
+  const scene = useRef<HTMLElement>(null);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [phase, setPhase] = useState<"closed" | "opening" | "opened">("closed");
+  const reduced = useReducedMotion();
+  const controls = useRef<ReturnType<typeof animate> | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const phaseRef = useRef(phase);
+  function finish(focus = false) {
+    controls.current?.stop();
+    clearTimeout(timer.current);
+    phaseRef.current = "opened";
+    setPhase("opened");
+    if (focus)
+      document.getElementById(firstTitle)?.focus({ preventScroll: true });
   }
-  return <section ref={scene} id="beginning" className="opening" aria-labelledby="opening-title"><div className="wrap hero-inner">
-    <Reveal as="p" className="dedication" entry="load">{story.cover.address}</Reveal>
-    <HeadingReveal as="h1" id="opening-title" entry="load" delay={motionRhythm.step}>{`今天，\n${story.cover.headline}`}</HeadingReveal>
-    <Reveal as="p" className="hero-description" entry="load" delay={motionRhythm.step * 3}>{story.cover.memory}</Reveal>
-    <Reveal className="hero-actions" entry="load" delay={motionRhythm.step * 4}><motion.button className="enter-button" onClick={enter} {...pressMotion(reduced)}>接起这段回忆<ArrowDownIcon size={17} aria-hidden="true" /></motion.button><a className="hero-letter-link" href="#letter">写给你的话<CaretRightIcon size={16} aria-hidden="true" /></a></Reveal>
-    <SceneDrift className="hero-art" target={scene} scale={0.98}>
-      <figure className="date-visual"><div className="still-media">{imageFailed ? <span className="date-fallback">10.25</span> : <motion.picture initial={reduced ? false : { scale: 1.07 }} animate={{ scale: 1 }} transition={{ ...storyTransition(reduced), duration: reduced ? 0 : 1.2 }}><source media="(prefers-color-scheme: dark) and (max-width: 767px)" srcSet={asset('meeting-date-dark-mobile.webp')} /><source media="(prefers-color-scheme: dark)" srcSet={asset('meeting-date-dark.webp')} /><source media="(max-width: 767px)" srcSet={asset('meeting-date-mobile.webp')} /><img src={asset('meeting-date.webp')} width="1536" height="1024" alt="10.25，见面纪念日期的金属立体排版意象。" fetchPriority="high" onError={() => setImageFailed(true)} /></motion.picture>}</div><motion.figcaption data-reveal="load" initial={reduced ? false : { y: motionRhythm.distance, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={storyTransition(reduced, motionRhythm.step * 4)}><time dateTime={story.dateISO}>{story.date}</time><span>长沙，见面纪念</span></motion.figcaption></figure>
-    </SceneDrift>
-  </div></section>
+  useEffect(() => {
+    const interrupt = () => {
+      if (phaseRef.current === "opening") finish();
+    };
+    const key = (event: KeyboardEvent) => {
+      if (
+        [
+          "Escape",
+          "PageDown",
+          "PageUp",
+          "ArrowDown",
+          "ArrowUp",
+          "Home",
+          "End",
+          " ",
+        ].includes(event.key)
+      )
+        interrupt();
+    };
+    window.addEventListener("wheel", interrupt, { passive: true });
+    window.addEventListener("pointerdown", interrupt, { passive: true });
+    window.addEventListener("touchstart", interrupt, { passive: true });
+    window.addEventListener("keydown", key);
+    return () => {
+      window.removeEventListener("wheel", interrupt);
+      window.removeEventListener("pointerdown", interrupt);
+      window.removeEventListener("touchstart", interrupt);
+      window.removeEventListener("keydown", key);
+      controls.current?.stop();
+      clearTimeout(timer.current);
+    };
+  }, []);
+  useEffect(() => {
+    if (reduced && phaseRef.current === "opening") {
+      document
+        .getElementById(firstScene)
+        ?.scrollIntoView({ behavior: "instant" });
+      finish(true);
+    }
+  }, [reduced]);
+  function enter() {
+    const destination = document.getElementById(firstScene);
+    if (!destination) return;
+    if (reduced || phase !== "closed") {
+      destination.scrollIntoView({ behavior: "instant" });
+      finish(true);
+      return;
+    }
+    phaseRef.current = "opening";
+    setPhase("opening");
+    // The cover gives way while the native document moves. Wheel/touch/key input cancels immediately.
+    const top = destination.getBoundingClientRect().top + window.scrollY - 76;
+    controls.current = animate(window.scrollY, top, {
+      duration: 1.05,
+      delay: 0.12,
+      ease: motionRhythm.ease,
+      onUpdate: (value) => window.scrollTo({ top: value, behavior: "instant" }),
+      onComplete: () => finish(true),
+    });
+    timer.current = setTimeout(() => finish(true), 1500);
+  }
+  return (
+    <section
+      ref={scene}
+      id="beginning"
+      className={`opening opening-${phase}`}
+      data-opening-phase={phase}
+      aria-labelledby="opening-title"
+    >
+      <motion.div
+        className="wrap hero-inner"
+        animate={
+          phase === "opening"
+            ? { y: -26, scale: 0.975, opacity: 0.25 }
+            : { y: 0, scale: 1, opacity: 1 }
+        }
+        transition={{ duration: reduced ? 0 : 0.72, ease: motionRhythm.ease }}
+      >
+        {story.demo && <p className="demo-label">友情纪念 · 虚构演示</p>}
+        <Reveal as="p" className="dedication" entry="load">
+          {story.cover.address}
+        </Reveal>
+        <HeadingReveal
+          as="h1"
+          id="opening-title"
+          entry="load"
+          delay={motionRhythm.step}
+        >
+          {story.cover.headline}
+        </HeadingReveal>
+        <Reveal
+          as="p"
+          className="hero-description"
+          entry="load"
+          delay={motionRhythm.step * 3}
+        >
+          {story.cover.memory}
+        </Reveal>
+        <Reveal
+          className="hero-actions"
+          entry="load"
+          delay={motionRhythm.step * 4}
+        >
+          <motion.button
+            className="enter-button"
+            onClick={enter}
+            aria-busy={phase === "opening"}
+            {...pressMotion(reduced)}
+          >
+            接起这段回忆
+            <ArrowDownIcon size={17} aria-hidden="true" />
+          </motion.button>
+          <a className="hero-letter-link" href="#letter">
+            写给你的话
+            <CaretRightIcon size={16} aria-hidden="true" />
+          </a>
+        </Reveal>
+        <SceneDrift className="hero-art" target={scene} scale={0.98}>
+          <figure className="date-visual">
+            <div className="still-media">
+              {!story.cover.art || imageFailed ? (
+                <span className="date-fallback">{story.cover.dateMark}</span>
+              ) : (
+                <motion.div
+                  className="date-picture"
+                  initial={reduced ? false : { scale: 1.07 }}
+                  animate={{ scale: 1 }}
+                  transition={{
+                    duration: reduced ? 0 : 1.2,
+                    ease: motionRhythm.ease,
+                  }}
+                >
+                  <StoryImage
+                    image={story.cover.art}
+                    priority
+                    onFailure={() => setImageFailed(true)}
+                  />
+                </motion.div>
+              )}
+            </div>
+            <Reveal
+              className="date-caption"
+              entry="load"
+              delay={motionRhythm.step * 4}
+            >
+              <time dateTime={story.dateISO}>{story.date}</time>
+              <span>{story.cover.location}</span>
+            </Reveal>
+          </figure>
+        </SceneDrift>
+      </motion.div>
+      <div className="opening-threshold" aria-hidden="true">
+        <span>{story.night?.time || story.date}</span>
+        <i />
+      </div>
+    </section>
+  );
 }
 
 function NightCalls() {
-  const scene = useRef<HTMLElement>(null)
-  const [selected, setSelected] = useState(0)
-  const [imageFailed, setImageFailed] = useState(false)
-  const reduced = useReducedMotion()
-  const [beginning, ending] = story.night.themes[selected].text.split('，')
-  return <section ref={scene} id="night-calls" className="night-calls scene" aria-labelledby="night-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="night-title" tabIndex={-1}>{story.night.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}><span className="lead">{story.night.lead}</span>{story.night.body}</Reveal></div>
-    <Reveal className="night-feature" delay={motionRhythm.step}>
-      <figure className="night-photo">{!imageFailed && <img src={asset('night-still-life.webp')} width="1536" height="1024" alt="深夜电话的静物意象，并非我们的物品实拍。" loading="lazy" onError={() => setImageFailed(true)} />}<figcaption><span>23:00</span><p>十一点了，还没聊完。</p></figcaption></figure>
-      <SceneDrift className="call-memory" target={scene}>
-        <div className="theme-buttons" role="group" aria-label="回忆里的通话主题">{story.night.themes.map((theme, i) => <motion.button key={theme.label} aria-pressed={selected === i} onClick={() => setSelected(i)} {...pressMotion(reduced)}>{theme.label}</motion.button>)}</div>
-        <div className="memory-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={selected} data-focus-reveal initial={reduced ? false : softText(4)} animate={sharpText} exit={{ opacity: 0, filter: reduced ? 'none' : 'blur(3px)', y: -4 }} transition={focusTransition(reduced, 0, 0.34)}><span>{beginning}，</span><strong>{ending}</strong></motion.p></AnimatePresence></div>
-      </SceneDrift>
-    </Reveal>
-  </div></section>
+  const content = story.night!;
+  const scene = useRef<HTMLElement>(null);
+  const [selected, setSelected] = useState(0);
+  const [imageFailed, setImageFailed] = useState(false);
+  const reduced = useReducedMotion();
+  const theme = content.themes[selected];
+  return (
+    <section
+      ref={scene}
+      id="night-calls"
+      className="night-calls scene"
+      aria-labelledby="night-title"
+    >
+      <div className="wrap">
+        <div className="chapter-heading">
+          <p className="chapter-index">01 / {story.relationship}</p>
+          <SceneTitle id="night-title" tabIndex={-1}>
+            {content.title}
+          </SceneTitle>
+          <Reveal as="p" className="body-copy" delay={motionRhythm.step}>
+            <span className="lead">{content.lead}</span>
+            {content.body}
+          </Reveal>
+        </div>
+        <SceneTransition className="night-feature">
+          <figure className="night-photo">
+            <ScrollScene target={scene} className="night-photo-scene">
+              <ImageTransition
+                crop={theme.position}
+                scale={selected === 1 ? 1.045 : 1}
+              >
+                {content.image && !imageFailed && (
+                  <StoryImage
+                    image={content.image}
+                    onFailure={() => setImageFailed(true)}
+                  />
+                )}
+              </ImageTransition>
+            </ScrollScene>
+            <figcaption>
+              <span className="call-time">{content.time}</span>
+              <p>{content.caption}</p>
+              <InteractionMotion
+                className="photo-memory-caption"
+                state={selected}
+              >
+                {theme.caption}
+              </InteractionMotion>
+            </figcaption>
+          </figure>
+          <SceneDrift className="call-memory" target={scene} distance={16}>
+            <div
+              className="theme-buttons"
+              role="group"
+              aria-label="回忆里的通话主题"
+            >
+              {content.themes.map((item, i) => (
+                <motion.button
+                  key={i}
+                  aria-pressed={selected === i}
+                  onClick={() => setSelected(i)}
+                  {...pressMotion(reduced)}
+                >
+                  {item.label}
+                </motion.button>
+              ))}
+            </div>
+            <div
+              className="memory-response"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <InteractionMotion state={selected} className="memory-text">
+                <p>
+                  {theme.lines.map((line, i) =>
+                    i === theme.lines.length - 1 ? (
+                      <strong key={i}>{line}</strong>
+                    ) : (
+                      <span key={i}>{line}</span>
+                    ),
+                  )}
+                </p>
+              </InteractionMotion>
+              <div className="memory-space" aria-hidden="true">
+                {content.themes.map((item, i) => (
+                  <p key={i}>
+                    {item.lines.map((line, j) =>
+                      j === item.lines.length - 1 ? (
+                        <strong key={j}>{line}</strong>
+                      ) : (
+                        <span key={j}>{line}</span>
+                      ),
+                    )}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </SceneDrift>
+        </SceneTransition>
+      </div>
+    </section>
+  );
 }
 
 function DuoMemory() {
-  const scene = useRef<HTMLElement>(null)
-  const [ready, setReady] = useState(false)
-  const reduced = useReducedMotion()
-  return <section ref={scene} id="duo" className="duo-memory scene" aria-labelledby="duo-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="duo-title">{story.duo.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}>{story.duo.body}</Reveal></div>
-    <Reveal className={`duo-stage ${ready ? 'is-ready' : ''}`} delay={motionRhythm.step}>
-      <div className="duo-visual" role="group" aria-label="这段回忆里的我和你"><SceneDrift className="memory-cards" target={scene} scale={0.98}><MemoryCard className="memory-card card-me" index={0} ready={ready}><span>我</span><small>一起</small></MemoryCard><MemoryCard className="memory-card card-you" index={1} ready={ready}><span>你</span><small>并肩</small></MemoryCard></SceneDrift><p className="duo-caption">一起打过的很多局</p></div>
-      <div className="duo-controls"><motion.button className="ready-button" aria-pressed={ready} onClick={() => setReady(!ready)} {...pressMotion(reduced)}>{ready ? <CheckIcon size={18} aria-hidden="true" /> : <PlusIcon size={18} aria-hidden="true" />}<span>{ready ? '再准备一次' : '一起准备'}</span></motion.button><div className="duo-response" aria-live="polite" aria-atomic="true"><AnimatePresence mode="wait" initial={false}><motion.p key={String(ready)} data-focus-reveal initial={reduced ? false : softText(4)} animate={sharpText} exit={{ opacity: 0, filter: reduced ? 'none' : 'blur(3px)', y: -4 }} transition={focusTransition(reduced, 0, 0.34)}>{ready ? story.duo.feedback : '有你在，就很熟悉。'}</motion.p></AnimatePresence></div></div>
-    </Reveal>
-  </div></section>
+  const content = story.duo!;
+  const scene = useRef<HTMLElement>(null);
+  const [ready, setReady] = useState(false);
+  const reduced = useReducedMotion();
+  return (
+    <section
+      ref={scene}
+      id="duo"
+      className="duo-memory scene"
+      aria-labelledby="duo-title"
+    >
+      <div className="wrap">
+        <div className="chapter-heading">
+          <SceneTitle id="duo-title" tabIndex={-1}>
+            {content.title}
+          </SceneTitle>
+          <Reveal as="p" className="body-copy">
+            {content.body}
+          </Reveal>
+        </div>
+        <SceneTransition className={`duo-stage ${ready ? "is-ready" : ""}`}>
+          <div
+            className="duo-visual"
+            role="group"
+            aria-label="这段回忆里的我和你"
+          >
+            <SceneDrift
+              className="memory-cards"
+              target={scene}
+              scale={0.98}
+              distance={16}
+            >
+              {content.people.map((person, i) => (
+                <MemoryCard
+                  className={`memory-card ${i === 0 ? "card-me" : "card-you"}`}
+                  index={i}
+                  ready={ready}
+                  key={i}
+                >
+                  <span
+                    className={
+                      person.name.length > 2 ? "card-name-long" : undefined
+                    }
+                  >
+                    {person.name}
+                  </span>
+                  <small>{person.caption}</small>
+                </MemoryCard>
+              ))}
+            </SceneDrift>
+            <p className="duo-caption">{content.caption}</p>
+            <div className="duo-alignment" aria-hidden="true">
+              <i />
+              <i />
+            </div>
+          </div>
+          <div className="duo-controls">
+            <motion.button
+              className="ready-button"
+              aria-pressed={ready}
+              onClick={() => setReady(!ready)}
+              {...pressMotion(reduced)}
+            >
+              {ready ? (
+                <CheckIcon size={18} aria-hidden="true" />
+              ) : (
+                <PlusIcon size={18} aria-hidden="true" />
+              )}
+              <span>{ready ? "再准备一次" : "一起准备"}</span>
+            </motion.button>
+            <div className="duo-response" aria-live="polite" aria-atomic="true">
+              <InteractionMotion state={String(ready)}>
+                <p>{ready ? content.feedback : content.idle}</p>
+              </InteractionMotion>
+              <div className="duo-space" aria-hidden="true">
+                <p>{content.feedback}</p>
+                <p>{content.idle}</p>
+              </div>
+            </div>
+          </div>
+        </SceneTransition>
+      </div>
+    </section>
+  );
 }
-
 function SmallSurprise() {
-  return <Reveal as="aside" className="small-surprise" aria-label="100 元的小惊喜"><p className="surprise-amount" aria-label="100 元"><span>¥</span>100</p><div className="surprise-copy"><p>{story.surprise.body}<br />{story.surprise.feeling}</p><details><summary>那一刻的我<PlusIcon className="details-icon" size={16} aria-hidden="true" /></summary><p>{story.surprise.detail}</p></details></div></Reveal>
+  const content = story.surprise!;
+  return (
+    <Reveal
+      as="aside"
+      className={`small-surprise ${content.mark ? "" : "surprise-prose"}`}
+      aria-label={content.label}
+    >
+      {content.mark && <p className="surprise-amount">{content.mark}</p>}
+      <div className="surprise-copy">
+        <p>
+          {content.body}
+          <br />
+          {content.feeling}
+        </p>
+        <details>
+          <summary>
+            {content.summary}
+            <PlusIcon className="details-icon" size={16} aria-hidden="true" />
+          </summary>
+          <p>{content.detail}</p>
+        </details>
+      </div>
+    </Reveal>
+  );
 }
-
 function CitiesMeet() {
-  const scene = useRef<HTMLElement>(null)
-  const reduced = useReducedMotion()
-  return <section ref={scene} id="today" className="cities-meet scene" aria-labelledby="meeting-title"><div className="wrap">
-    <div className="chapter-heading"><SceneTitle id="meeting-title">{story.meeting.title}</SceneTitle><Reveal as="p" className="body-copy" delay={motionRhythm.step}>{story.meeting.body}</Reveal></div>
-    <div className="arrival-poster" role="group" aria-label="你在邵阳，我在长沙。今天，我们已经在长沙见面了。"><Reveal className="arrival-origin"><p>你从</p><strong>邵阳</strong></Reveal><SceneDrift className="arrival-destination" target={scene}><Reveal as="p">来到</Reveal><motion.div className="city-word-window" initial={reduced ? false : 'before'} whileInView="visible" viewport={{ once: true, amount: 0.15, margin: '0px 0px -32px 0px' }}><motion.span className="city-word" data-reveal="scroll" data-focus-reveal variants={{ before: softText(7), visible: sharpText }} transition={focusTransition(reduced, motionRhythm.step)}>长沙</motion.span></motion.div><Reveal as="p" className="meeting-note" delay={motionRhythm.step * 2}>这一次，已经见到你本人。</Reveal></SceneDrift></div>
-    <SmallSurprise />
-  </div></section>
+  const content = story.meeting!;
+  const scene = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
+  return (
+    <section
+      ref={scene}
+      id="today"
+      className="cities-meet scene"
+      aria-labelledby="meeting-title"
+    >
+      <div className="wrap">
+        <div className="chapter-heading">
+          <SceneTitle id="meeting-title" tabIndex={-1}>
+            {content.title}
+          </SceneTitle>
+          <Reveal as="p" className="body-copy">
+            <span className="lead">{content.lead}</span>
+            {content.body}
+          </Reveal>
+        </div>
+        <div
+          className="arrival-poster"
+          role="group"
+          aria-label={content.lead + content.body}
+        >
+          <Reveal className="arrival-origin">
+            <p>从</p>
+            <strong>{content.origin}</strong>
+          </Reveal>
+          <SceneDrift
+            className="arrival-destination"
+            target={scene}
+            distance={24}
+          >
+            <Reveal as="p">来到</Reveal>
+            <motion.div
+              className="city-word-window"
+              initial={reduced ? false : "before"}
+              animate={reduced ? "visible" : undefined}
+              whileInView={reduced ? undefined : "visible"}
+              viewport={{ once: true, amount: 0.15 }}
+            >
+              <motion.span
+                className="city-word"
+                data-city-reveal
+                variants={{ before: { y: "100%" }, visible: { y: 0 } }}
+                transition={{
+                  duration: reduced ? 0 : 0.9,
+                  ease: motionRhythm.ease,
+                }}
+              >
+                {content.destination}
+              </motion.span>
+            </motion.div>
+            <Reveal as="p" className="meeting-note" delay={0.18}>
+              {content.note}
+            </Reveal>
+          </SceneDrift>
+        </div>
+        {story.events.length > 0 && (
+          <Reveal className="event-dates">
+            {story.events.map((event, i) => (
+              <p key={i}>
+                <time dateTime={event.dateISO}>
+                  {event.dateISO.split("-").join(".")}
+                </time>
+                <span>{event.label}</span>
+              </p>
+            ))}
+          </Reveal>
+        )}
+        {story.surprise && <SmallSurprise />}
+      </div>
+    </section>
+  );
 }
-
 function FinalLetter() {
-  const [shareMessage, setShareMessage] = useState('')
+  const [shareMessage, setShareMessage] = useState("");
   async function share() {
-    const url = new URL(import.meta.env.BASE_URL, window.location.origin).href
+    const url = new URL(import.meta.env.BASE_URL, window.location.origin).href;
     try {
-      if (navigator.share) { await navigator.share({ title: story.title, text: '罗琛尧，今天我们见面了。这份纪念，送给你。', url }); setShareMessage('已打开分享。') }
-      else if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(url); setShareMessage('链接已复制，可以发给你了。') }
-      else setShareMessage('请复制浏览器地址，把这份纪念分享出去。')
+      if (navigator.share) {
+        await navigator.share({
+          title: story.share.title,
+          text: story.share.text,
+          url,
+        });
+        setShareMessage("已打开分享。");
+      } else if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+        setShareMessage("链接已复制，可以发给你了。");
+      } else setShareMessage("请复制浏览器地址，把这份纪念分享出去。");
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') setShareMessage('等你想分享的时候再发。')
-      else setShareMessage('暂时无法分享，请复制浏览器地址。')
+      setShareMessage(
+        error instanceof Error && error.name === "AbortError"
+          ? "等你想分享的时候再发。"
+          : "暂时无法分享，请复制浏览器地址。",
+      );
     }
   }
-  const [first, second] = story.blessing.split('你永远')
-  const [beforeSchool, afterSchool] = first.split('娄底三中')
-  return <section id="letter" className="final-letter scene" aria-labelledby="letter-title"><div className="wrap"><div className="letter-sheet"><Reveal as="p" className="letter-intro">见面之后，还有几句话。</Reveal><SceneTitle id="letter-title">{`${story.friend}，`}</SceneTitle><div className="letter-body">{story.letter.map((line, index) => <Reveal as="p" key={line} delay={index % 2 * motionRhythm.step}>{line}</Reveal>)}</div><Reveal className="letter-actions" delay={motionRhythm.step}><a href="#beginning" className="text-button">再读一遍<ArrowUpRightIcon size={16} aria-hidden="true" /></a><button className="text-button" onClick={share}><ShareNetworkIcon size={17} aria-hidden="true" />分享这份回忆</button></Reveal><p className="share-feedback" role="status">{shareMessage}</p><Reveal as="p" className="final-blessing">{beforeSchool}<span className="no-break">娄底三中</span>{afterSchool}<br className="blessing-break" />你永远{second.split('best friends')[0]}<strong>best friends。</strong></Reveal></div></div></section>
+  return (
+    <section
+      id="letter"
+      className="final-letter scene"
+      aria-labelledby="letter-title"
+    >
+      <div className="wrap">
+        <div className="letter-sheet">
+          <Reveal className="letter-rule">
+            <i />
+            <time dateTime={story.dateISO}>{story.date}</time>
+          </Reveal>
+          <Reveal as="p" className="letter-intro">
+            {story.letterIntro}
+          </Reveal>
+          <SceneTitle
+            id="letter-title"
+            tabIndex={-1}
+          >{`${story.friend}，`}</SceneTitle>
+          <div className="letter-body">
+            {story.letter.map((line, i) => (
+              <Reveal as="p" key={i} focus={false} distance={12}>
+                {line}
+              </Reveal>
+            ))}
+          </div>
+          <Reveal as="p" className="final-blessing" focus={false} distance={14}>
+            {story.blessing.map((part, i) =>
+              part.emphasis ? (
+                <strong key={i}>{part.text}</strong>
+              ) : (
+                <span key={i}>{part.text}</span>
+              ),
+            )}
+          </Reveal>
+          <Reveal className="letter-actions">
+            <a href="#beginning" className="text-button">
+              再读一遍
+              <ArrowUpRightIcon size={16} aria-hidden="true" />
+            </a>
+            <button className="text-button" onClick={share}>
+              <ShareNetworkIcon size={17} aria-hidden="true" />
+              分享这份回忆
+            </button>
+          </Reveal>
+          <p className="share-feedback" role="status">
+            {shareMessage}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 }
-
 function WeekendNote() {
-  return <section id="weekend-note" className="weekend-note" aria-labelledby="weekend-title"><div className="wrap"><Reveal className="weekend-note-card"><p className="weekend-date"><time dateTime={story.weekend.dateISO}>{story.weekend.date}</time></p><SceneTitle id="weekend-title">{story.weekend.title}</SceneTitle><Reveal as="p" className="weekend-copy" delay={motionRhythm.step}>{story.weekend.body}</Reveal></Reveal></div></section>
+  const content = story.weekend!;
+  return (
+    <section
+      id="weekend-note"
+      className="weekend-note"
+      aria-labelledby="weekend-title"
+    >
+      <div className="wrap">
+        <Reveal className="weekend-note-card">
+          <p className="weekend-date">
+            <time dateTime={content.dateISO}>{content.date}</time>
+          </p>
+          <SceneTitle id="weekend-title">{content.title}</SceneTitle>
+          <Reveal as="p" className="weekend-copy">
+            {content.body}
+          </Reveal>
+        </Reveal>
+      </div>
+    </section>
+  );
 }
-
 export function App() {
-  return <><a href="#night-calls" className="skip-link">跳到回忆正文</a><SiteHeader /><main id="story"><OpeningScene /><NightCalls /><DuoMemory /><CitiesMeet /><FinalLetter /><WeekendNote /></main></>
+  return (
+    <>
+      <a href={`#${firstScene}`} className="skip-link">
+        跳到回忆正文
+      </a>
+      <SiteHeader />
+      <main id="story">
+        <OpeningScene />
+        {story.night && <NightCalls />}
+        {story.duo && <DuoMemory />}
+        {story.meeting && <CitiesMeet />}
+        {!story.meeting && story.surprise && (
+          <section className="scene">
+            <div className="wrap">
+              <SmallSurprise />
+            </div>
+          </section>
+        )}
+        <FinalLetter />
+        {story.weekend && <WeekendNote />}
+      </main>
+      <footer className="story-ending">
+        <span aria-hidden="true" />
+        <p>{story.ending}</p>
+        <small>
+          {story.demo
+            ? "人物与经历均为虚构 · 仅作模板演示"
+            : `${story.date} / ${story.relationship}`}
+        </small>
+      </footer>
+    </>
+  );
 }

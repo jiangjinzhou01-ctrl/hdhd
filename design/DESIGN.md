@@ -45,3 +45,19 @@ Apple 系统优先使用设备已有的系统字体；其他环境使用自托�
 ## 验收与交付
 
 真实运行画面见 ui-overview.png / ui-overview-dark.png 和 desktop-cover.png / desktop-cover-dark.png，动态浏览见 motion-preview.webm / motion-preview-dark.webm。测试覆盖四种主要视口、短屏、平板、所有按钮、键盘、字体和图片失败、动态完成态与减少动态效果。性能测试与视觉审视分别记录，不用分数代替审美判断。
+
+## V2：从组件进入到场景连续
+
+V2 继承以上 V1 事实、字体、原创意象与配色。`stories/private/story.json` 完整保存私人文案与周末留言；`stories/demo/story.json` 是独立虚构故事，不能将原姓名与学校当作商业案例。
+
+开场约 1.2 秒：120ms 触控后开始让位，720ms 封面空间缩退，与 1050ms 文档移动重叠，最后把阅读焦点交给首个实际章节。第二次点击直接完成；原生滚轮、触摸、指针和阅读按键接管时停止程序移动。没有遮罩锁屏、声音和长时间等待。
+
+深夜场景同时使用滚动摄影层与局部主题状态。主题切换约 320ms，摄影裁切约 700ms；注释只描述已有主题，不冒充真实通话记录。文字的隐形尺寸占位使用所有实际内容的最大高度，避免切换时推动后续章节。
+
+双卡使用同一阻尼参数 `190 / 27 / .8`，初始各向外 7px、上下 8px、旋转 4°，准备时各向内 5px 并对齐。复位返回原状态。较长人物名称使用更小字号，卡片可随内容增长，双卡共享高度。没有增加大角度旋转或持续循环。
+
+城市文字从真实遮罩下揭示，观察的是静止外框而不是已移出遮罩的文字。与日期 / 事件行共用排版轴。信件按段落进入，无文字 blur；祝福前后独立留白，分享位于祝福后，末尾用细线与结束语收束。原周末留言继续在私人信件之后。
+
+统一原语在 `StoryMotion.tsx`：Reveal、FocusReveal、ScrollScene、SceneTransition、InteractionMotion、ImageTransition、ReducedMotionFallback。普通揭示 760ms、文字 960ms、状态 320ms、按压 240ms；标题 blur 由 7px 收敛为 5px，完成后释放滤镜。滚动通过 MotionValue 与轻弹簧跟随，不在 React 状态里逐帧重渲染。
+
+移动页面从 320px 开始检查，包括短屏与横屏；深夜照片使用专属移动裁切。系统减少动态时全部直接清晰；缺少 IntersectionObserver 时禁用依赖观察的进入，完整静态阅读。V2 真实审查图保存在 `artifacts/review-private/`、`artifacts/review-demo/`，V1 的 design 原文件保留。

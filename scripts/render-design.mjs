@@ -1,49 +1,88 @@
-import { chromium } from '@playwright/test'
-import { readFile, mkdir } from 'node:fs/promises'
-
-const url = process.env.TEST_URL || 'http://localhost:4173/symmetrical-carnival/phone-to-today/'
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] })
-await mkdir('design', { recursive: true })
-await mkdir('qa', { recursive: true })
-const font = async name => `data:font/woff2;base64,${(await readFile(`public/fonts/${name}`)).toString('base64')}`
-const faces = `@font-face{font-family:Today;src:url('${await font('today-sans-regular.woff2')}');font-weight:400}@font-face{font-family:Today;src:url('${await font('today-sans-semibold.woff2')}');font-weight:600}`
-const scenes = [
-  ['beginning', '今天，见到你了', '从已经见面的今天开场'],
-  ['night-calls', '那些深夜', '回忆中的电话与文字回应'],
-  ['duo', '一直并肩', '双卡进入与可逆互动'],
-  ['today', '长沙见面', '真实地点与一个小惊喜'],
-  ['letter', '见面后的信', '中考尚未来到，祝福指向以后'],
-  ['weekend-note', '10 月 28 日', '周末记得陪我聊天，一起打和平'],
-]
+import { chromium } from "@playwright/test";
+import { readFile, mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+const url = process.env.TEST_URL || "http://localhost:4175/";
+const output = resolve(process.env.REVIEW_DIR || "artifacts/review-demo");
+const browser = await chromium.launch({
+  executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
+  args: ["--no-sandbox"],
+});
+const escape = (s) =>
+  s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+await mkdir(output, { recursive: true });
+const fonts = await Promise.all(
+  ["regular", "semibold"].map(
+    async (weight, i) =>
+      `@font-face{font-family:Today;src:url('data:font/woff2;base64,${(await readFile(`public/fonts/today-sans-${weight}.woff2`)).toString("base64")}');font-weight:${i ? 600 : 400}}`,
+  ),
+);
 try {
-  for (const colorScheme of ['light', 'dark']) {
-    const suffix = colorScheme === 'dark' ? '-dark' : ''
-    const palette = colorScheme === 'dark' ? [['#08080a','黑色'],['#151517','画面'],['#f5f5f7','正文'],['#0071e3','操作']] : [['#f5f5f7','浅灰'],['#fbfbfd','画面'],['#1d1d1f','正文'],['#0071e3','操作']]
-    const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme })
-    await mobile.goto(url, { waitUntil: 'networkidle' })
-    await mobile.evaluate(() => document.fonts.ready)
-    for (const [id] of scenes) await mobile.locator(`#${id}`).screenshot({ path: `qa/review${suffix}-${id}.png` })
-    await mobile.close()
-    const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme })
-    await desktop.goto(url, { waitUntil: 'networkidle' })
-    await desktop.screenshot({ path: `design/desktop-cover${suffix}.png` })
-    await desktop.close()
-    const markup = await Promise.all(scenes.map(async ([id, title, caption]) => `<figure><figcaption><h2>${title}</h2><p>${caption}</p></figcaption><img src="data:image/png;base64,${(await readFile(`qa/review${suffix}-${id}.png`)).toString('base64')}"></figure>`))
-    const board = await browser.newPage({ viewport: { width: 2100, height: 1200 }, deviceScaleFactor: 1 })
-    await board.setContent(`<!doctype html><html lang="zh-CN"><style>${faces}*{box-sizing:border-box}body{margin:0;background:#ececf0;color:#1d1d1f;font-family:Today,sans-serif}.board{padding:54px 52px 60px}header{display:flex;justify-content:space-between;align-items:end;gap:40px}h1{font-size:43px;line-height:1.35;font-weight:600;letter-spacing:-1.5px;margin:0}header p{font-size:15px;line-height:1.8;margin:12px 0 0;color:#626267}.date{font:14px monospace;color:#626267;white-space:nowrap}.system{display:flex;align-items:center;gap:28px;margin:28px 0 39px;font-size:13px;color:#626267}.swatches{display:flex;gap:17px}.swatch{display:flex;align-items:center;gap:8px}.swatch i{display:block;width:22px;height:22px;border-radius:6px}.screens{display:grid;grid-template-columns:repeat(${scenes.length},minmax(0,1fr));gap:24px}figure{margin:0}figcaption{margin-bottom:18px}figcaption h2{font-size:17px;font-weight:600;margin:0 0 8px}figcaption p{font-size:12px;color:#626267;margin:0}figure img{display:block;width:100%;height:auto;box-shadow:0 8px 25px #1d1d1f08}.note{font-size:12px;color:#626267;margin:30px 0 0;line-height:1.8}</style><div class="board"><header><div><h1>今天，见到你了。</h1><p>给罗琛尧的一份见面纪念。参考 Apple 产品页的留白、层级与滚动节奏；实际内容与画面为本项目原创。</p></div><div class="date">2026.10.25 / 长沙</div></header><div class="system"><span>系统无衬线 / Today Sans 400 + 600</span><span>桌面与手机独立构图</span><span>16px 手机正文 / 44px 以上触摸区域</span><div class="swatches">${palette.map(([color,label])=>`<span class="swatch"><i style="background:${color}"></i>${label}</span>`).join('')}</div></div><div class="screens">${markup.join('')}</div><p class="note">这是已实现网站的静态截图，动态过程见 motion-preview${suffix}.webm。日期雕塑与深夜静物均为原创意象，不冒充两人的见面照片。</p></div></html>`)
-    if (colorScheme === 'dark') await board.addStyleTag({ content: 'body{background:#111113;color:#f5f5f7}header p,.date,.system,figcaption p,.note{color:#aaaab0}figure img{box-shadow:0 8px 25px #0003}' })
-    await board.evaluate(() => document.fonts.ready)
-    await board.locator('img').evaluateAll(nodes => Promise.all(nodes.map(node => node.decode())))
-    await board.screenshot({ path: `design/ui-overview${suffix}.png`, fullPage: true })
-    if (colorScheme === 'light') {
-      const dateImage = `data:image/webp;base64,${(await readFile('public/meeting-date.webp')).toString('base64')}`
-      await board.setViewportSize({ width: 1200, height: 630 })
-      await board.setContent(`<!doctype html><html lang="zh-CN"><style>${faces}*{box-sizing:border-box}body{margin:0;background:#f5f5f7;color:#1d1d1f;font-family:Today,sans-serif}.cover{height:630px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px}.name{font-size:17px;font-weight:600;margin:0 0 13px}h1{font-size:65px;line-height:1.12;font-weight:600;letter-spacing:-3px;margin:0}.note{font-size:19px;line-height:1.5;margin:17px 0 4px;color:#626267}.art{height:230px;width:700px;object-fit:contain;mask-image:linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent)}.date{font-size:13px;color:#626267;margin-top:5px}</style><div class="cover"><p class="name">罗琛尧，这份纪念送给你。</p><h1>今天，<br>见到你了。</h1><p class="note">从电话那头，到今天的长沙。</p><img class="art" src="${dateImage}" alt=""><p class="date">2026.10.25 / 长沙，见面纪念</p></div></html>`)
-      await board.evaluate(() => document.fonts.ready)
-      await board.locator('img').evaluate(node => node.decode())
-      await board.screenshot({ path: 'public/social-preview.png' })
+  for (const colorScheme of ["light", "dark"]) {
+    const p = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+      colorScheme,
+      reducedMotion: "reduce",
+    });
+    await p.goto(url, { waitUntil: "networkidle" });
+    await p.evaluate(() => document.fonts.ready);
+    const title = await p.title();
+    const scenes = [];
+    for (const section of await p.locator("main > section").all()) {
+      const id = (await section.getAttribute("id")) || `scene-${scenes.length}`;
+      const heading = await section
+        .locator("h1,h2")
+        .first()
+        .textContent()
+        .catch(() => id);
+      const file = resolve(output, `${id}-${colorScheme}.png`);
+      await section.screenshot({ path: file });
+      scenes.push({ id, title: heading, file });
     }
-    await board.close()
+    await p
+      .locator("#beginning")
+      .evaluate((n) => n.scrollIntoView({ behavior: "instant" }));
+    await p.screenshot({
+      path: resolve(output, `mobile-cover-${colorScheme}.png`),
+    });
+    await p.setViewportSize({ width: 1440, height: 1000 });
+    await p.screenshot({
+      path: resolve(output, `desktop-cover-${colorScheme}.png`),
+    });
+    await p.close();
+    const board = await browser.newPage({
+      viewport: {
+        width: Math.max(scenes.length * 350 + 96, 1200),
+        height: 1000,
+      },
+    });
+    const figures = await Promise.all(
+      scenes.map(
+        async (s, i) =>
+          `<figure><figcaption>${String(i + 1).padStart(2, "0")} / ${escape(s.title)}</figcaption><img src="data:image/png;base64,${(await readFile(s.file)).toString("base64")}"></figure>`,
+      ),
+    );
+    await board.setContent(
+      `<!doctype html><html lang="zh-CN"><style>${fonts.join("")}*{box-sizing:border-box}body{margin:0;padding:48px;background:${colorScheme === "dark" ? "#08080a" : "#f5f5f7"};color:${colorScheme === "dark" ? "#f5f5f7" : "#1d1d1f"};font-family:Today,sans-serif}h1{font-size:36px;font-weight:600;margin:0 0 12px}p{font-size:14px;color:${colorScheme === "dark" ? "#aaaab0" : "#626267"};margin-bottom:40px}.screens{display:grid;grid-template-columns:repeat(${scenes.length},1fr);gap:24px}figure{margin:0}figcaption{font-size:14px;font-weight:600;white-space:pre-line;min-height:60px;margin-bottom:16px}img{width:100%;display:block}</style><h1>${escape(title)} / V2</h1><p>真实浏览器画面 · 390 × 844 · ${colorScheme} · 动态演示另见真实录屏</p><div class="screens">${figures.join("")}</div></html>`,
+    );
+    await board.evaluate(() => document.fonts.ready);
+    await board
+      .locator("img")
+      .evaluateAll((ns) => Promise.all(ns.map((n) => n.decode())));
+    await board.screenshot({
+      path: resolve(output, `overview-${colorScheme}.png`),
+      fullPage: true,
+    });
+    await board.close();
   }
-  console.log('Updated light and dark UI overviews, desktop covers, and the share preview.')
-} finally { await browser.close() }
+  console.log(
+    `Reviewed real light/dark scenes at ${output}; V1 artifacts were preserved.`,
+  );
+} finally {
+  await browser.close();
+}

@@ -25,3 +25,11 @@ Apple 官网只作版式、留白和动效节奏的参考；没有下载和复�
 `meeting-date-dark.webp` 与 `meeting-date-dark-mobile.webp` 是在同一原始日期雕塑基础上制作的独立深色版本。原始编辑结果保留在 `/workspace/generated_images/exec-2b0e23ab-20d9-461a-b039-6e0e780b8e85.png`。构图与 10.25 字样保持一致，材质改为石墨黑金属与银色边缘高光，背景改为近黑摄影棚。它仍然是纪念日期的设计意象。
 
 WebP 文件沿用浅色版本的裁剪范围，桌面宽 1440px、约 30KB，手机宽 800px、约 11KB。通过 picture / source 与带媒体条件的预加载跟随系统颜色偏好选择，首次深色访问只请求相应尺寸的深色图像。所有版本均由本站托管。
+
+## V2 演示与隔离
+
+`public/demo-preview.png` 来自虚构演示真实页面的浏览器排版截图（1200×630），没有使用原私人姓名、学校或原作日期雕塑。`stories/demo/story.json` 所有人物与经历均为虚构，首尾有演示标记。原深夜静物仍为已授权原创意象，并非人物物品实拍。
+
+新增汉字继续使用 Noto Sans SC 2.004 / SIL OFL 1.1；Today Sans 的 400 / 600 子集已重新生成，含私人版、演示版和新界面文字。`src/font-coverage.json` 用于构建时缺字检查。字体版权、OFL 原文与既有第三方声明均保留；本轮没有添加运行时依赖。
+
+V2 的媒体构建按引用收集，`public/` 不再整体复制进成品。客户授权图片置于本地忽略目录 `customers/<id>/media/`，不要上传到公开源码。演示录屏使用真实浏览器和 FFmpeg 转码，位于本地 `artifacts/demo-light/` 与 `artifacts/demo-dark/`；不能将私人录屏当作公开广告。

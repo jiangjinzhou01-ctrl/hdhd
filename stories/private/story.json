@@ -1,0 +1,142 @@
+{
+  "title": "电话那头，今天见。",
+  "friend": "罗琛尧",
+  "date": "2026.10.25",
+  "dateISO": "2026-10-25",
+  "opening": "罗琛尧，从初二到现在的初三，电话那头一直有你。这次在长沙，我们见面了。",
+  "cover": {
+    "address": "罗琛尧，这份纪念送给你。",
+    "headline": "今天，\n见到你了。",
+    "memory": "从电话那头，到今天的长沙。",
+    "gift": "想把这次见面，和那些深夜一起记住。",
+    "caption": "见面纪念",
+    "dateMark": "10.25",
+    "location": "长沙，见面纪念",
+    "art": {
+      "src": "meeting-date.webp",
+      "mobile": "meeting-date-mobile.webp",
+      "dark": "meeting-date-dark.webp",
+      "darkMobile": "meeting-date-dark-mobile.webp",
+      "alt": "10.25，见面纪念日期的金属立体排版意象。"
+    }
+  },
+  "night": {
+    "title": "那些深夜，\n一直有你。",
+    "lead": "从初二到现在，我们什么都聊。",
+    "body": "聊到晚上十一点，甚至更晚。现在你上初三了，电话那头，还是熟悉的你。",
+    "themes": [
+      {
+        "label": "初二",
+        "lines": [
+          "初二的时候，",
+          "你在。"
+        ],
+        "position": "70% center",
+        "caption": "初二的时候，你在。"
+      },
+      {
+        "label": "初三",
+        "lines": [
+          "现在上初三，",
+          "你还在。"
+        ],
+        "position": "80% center",
+        "caption": "现在上初三，你还在。"
+      },
+      {
+        "label": "什么都聊",
+        "lines": [
+          "很多话，",
+          "都能跟你说。"
+        ],
+        "position": "60% center",
+        "caption": "很多话，都能跟你说。"
+      }
+    ],
+    "image": {
+      "src": "night-still-life.webp",
+      "mobile": "night-still-life-wide-mobile.webp",
+      "alt": "深夜电话的静物意象，并非我们的物品实拍。"
+    },
+    "time": "23:00",
+    "caption": "十一点了，还没聊完。"
+  },
+  "duo": {
+    "title": "很多局，\n都记得。",
+    "body": "和平里的很多局，都是一起打的。你陪我完成过不少对局，那些时间，我一直记得。",
+    "feedback": "这一段回忆里，你一直是我的队友。",
+    "people": [
+      {
+        "name": "我",
+        "caption": "一起"
+      },
+      {
+        "name": "你",
+        "caption": "并肩"
+      }
+    ],
+    "caption": "一起打过的很多局",
+    "idle": "有你在，就很熟悉。"
+  },
+  "meeting": {
+    "title": "今天，\n真的见面了。",
+    "lead": "你在邵阳，我在长沙。",
+    "body": "你从邵阳来长沙看我。今天，我们已经见面了。",
+    "origin": "邵阳",
+    "destination": "长沙",
+    "note": "这一次，已经见到你本人。"
+  },
+  "surprise": {
+    "body": "还有，你今天居然还给我转了 100 块。",
+    "feeling": "我当时真的高兴坏了。",
+    "detail": "这个小惊喜，我也想一起记住。",
+    "label": "100 元的小惊喜",
+    "mark": "¥100",
+    "summary": "那一刻的我"
+  },
+  "letter": [
+    "谢谢你陪我聊过那么多深夜，也谢谢你今天来看我。",
+    "中考还在前面。愿你接下来的日子，有努力，也有很多值得开心的事；也愿我们还有很多次见面。"
+  ],
+  "blessing": [
+    {
+      "text": "不管你以后能不能考上娄底三中，"
+    },
+    {
+      "text": "你永远是我的 "
+    },
+    {
+      "text": "best friends。",
+      "emphasis": true
+    }
+  ],
+  "weekend": {
+    "date": "2026.10.28",
+    "dateISO": "2026-10-28",
+    "title": "周末记得陪我聊天，\n一起打和平。",
+    "body": "有空就叫我，聊什么都行。"
+  },
+  "id": "private",
+  "relationship": "友情",
+  "theme": "system",
+  "demo": false,
+  "navigation": {
+    "name": "电话那头，今天见",
+    "night": "回忆",
+    "meeting": "今天",
+    "letter": "写给你"
+  },
+  "letterIntro": "见面之后，还有几句话。",
+  "share": {
+    "title": "电话那头，今天见。",
+    "text": "罗琛尧，今天我们见面了。这份纪念，送给你。",
+    "image": "social-preview.png"
+  },
+  "ending": "这段回忆，留在这里。",
+  "events": [
+    {
+      "dateISO": "2026-10-25",
+      "label": "长沙见面"
+    }
+  ]
+}

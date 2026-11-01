@@ -4,7 +4,7 @@ Usage: PYTHONPATH=/tmp/phone-font-tools python scripts/subset-fonts.py /path/to/
 Requires fontTools and Brotli; the original OFL license stays with the subset.
 """
 from pathlib import Path
-import sys
+import sys, os, json
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 from fontTools import subset
@@ -12,6 +12,9 @@ from fontTools import subset
 root = Path(__file__).resolve().parent.parent
 source = Path(sys.argv[1])
 corpus = "".join(p.read_text() for p in (root / "src").glob("*.*") if p.suffix in {".tsx", ".ts"})
+corpus += "".join(p.read_text() for p in (root / "stories").rglob("*.json"))
+if os.environ.get("STORY_FILE"):
+    corpus += Path(os.environ["STORY_FILE"]).read_text()
 corpus += (root / "index.html").read_text() + "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?¥＋ /-（）「」"
 output = root / "public" / "fonts"
 output.mkdir(parents=True, exist_ok=True)
@@ -38,3 +41,7 @@ for weight, style in [(400, "Regular"), (600, "Semibold")]:
     target = output / ("today-sans-" + style.lower() + ".woff2")
     font.save(target)
     print(target.name, target.stat().st_size, "bytes")
+
+# Build-time glyph coverage requires no Python during ordinary npm builds.
+coverage = TTFont(output / "today-sans-regular.woff2").getBestCmap()
+(root / "src/font-coverage.json").write_text(json.dumps(sorted(coverage)))

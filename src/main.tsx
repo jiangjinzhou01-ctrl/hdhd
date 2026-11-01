@@ -1,12 +1,17 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { MotionConfig } from 'motion/react'
-import { App } from './App'
-import './tokens.css'
-import './style.css'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { MotionConfig } from "motion/react";
+import { App } from "./App";
+import "./tokens.css";
+import "./style.css";
 
-createRoot(document.getElementById('root')!).render(
+const staticMotion = typeof IntersectionObserver === "undefined";
+if (staticMotion) document.documentElement.dataset.motion = "static";
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MotionConfig reducedMotion="user"><App /></MotionConfig>
+    <MotionConfig reducedMotion={staticMotion ? "always" : "user"}>
+      <App />
+    </MotionConfig>
   </StrictMode>,
-)
+);

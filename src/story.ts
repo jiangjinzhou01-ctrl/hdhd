@@ -1,50 +1,18 @@
-export const story = {
-  title: '电话那头，今天见。',
-  friend: '罗琛尧',
-  date: '2026.10.25',
-  dateISO: '2026-10-25',
-  opening: '罗琛尧，从初二到现在的初三，电话那头一直有你。这次在长沙，我们见面了。',
-  cover: {
-    address: '罗琛尧，这份纪念送给你。',
-    headline: '见到你了。',
-    memory: '从电话那头，到今天的长沙。',
-    gift: '想把这次见面，和那些深夜一起记住。',
-    caption: '见面纪念',
-  },
-  night: {
-    title: '那些深夜，\n一直有你。',
-    lead: '从初二到现在，我们什么都聊。',
-    body: '聊到晚上十一点，甚至更晚。现在你上初三了，电话那头，还是熟悉的你。',
-    themes: [
-      { label: '初二', text: '初二的时候，你在。' },
-      { label: '初三', text: '现在上初三，你还在。' },
-      { label: '什么都聊', text: '很多话，都能跟你说。' },
-    ],
-  },
-  duo: {
-    title: '很多局，\n都记得。',
-    body: '和平里的很多局，都是一起打的。你陪我完成过不少对局，那些时间，我一直记得。',
-    feedback: '这一段回忆里，你一直是我的队友。',
-  },
-  meeting: {
-    title: '今天，\n真的见面了。',
-    lead: '你在邵阳，我在长沙。',
-    body: '你从邵阳来长沙看我。今天，我们已经见面了。',
-  },
-  surprise: {
-    body: '还有，你今天居然还给我转了 100 块。',
-    feeling: '我当时真的高兴坏了。',
-    detail: '这个小惊喜，我也想一起记住。',
-  },
-  letter: [
-    '谢谢你陪我聊过那么多深夜，也谢谢你今天来看我。',
-    '中考还在前面。愿你接下来的日子，有努力，也有很多值得开心的事；也愿我们还有很多次见面。',
-  ],
-  blessing: '不管你以后能不能考上娄底三中，你永远是我的 best friends。',
-  weekend: {
-    date: '2026.10.28',
-    dateISO: '2026-10-28',
-    title: '周末记得陪我聊天，\n一起打和平。',
-    body: '有空就叫我，聊什么都行。',
-  },
-} as const
+import selected from "virtual:story";
+import { validateStory } from "./story-schema";
+export const story = validateStory(selected);
+export const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`;
+export const firstScene = story.night
+  ? "night-calls"
+  : story.duo
+    ? "duo"
+    : story.meeting
+      ? "today"
+      : "letter";
+export const firstTitle = story.night
+  ? "night-title"
+  : story.duo
+    ? "duo-title"
+    : story.meeting
+      ? "meeting-title"
+      : "letter-title";
