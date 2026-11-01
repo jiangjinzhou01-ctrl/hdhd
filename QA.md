@@ -11,7 +11,7 @@
 - `scripts/check-all.mjs` 本地编排已完整执行通过；不把本地结果称为远程 CI 成功。
 - 真实演示录屏已输出 light / dark，含手机 WebM / MP4、1080×1920 H.264 MP4 和各 8 个独立镜头。已抽帧查看实际运行内容，ffprobe 检查编码与尺寸。
 
-独立 Lighthouse 13.5.0 移动模拟：Performance 96、Accessibility 100、Best Practices 100、SEO 100；FCP 1.6s、LCP 2.4s、TBT 130ms、CLS 0。结果与 HTML 报告保存在 qa/v2/lighthouse-final.report.*。这是实验室结果，真实用户 INP 未采集，TBT 不代表 INP。
+独立 Lighthouse 13.5.0 移动模拟：Performance 96、Accessibility 100、Best Practices 100、SEO 100；FCP 1.6s、LCP 2.4s、TBT 120ms、CLS 0。同环境顺序对照 V1 为 98 分、LCP 2.2s、TBT 70ms、CLS 0。V2 另两次独立测量为 96 分 / TBT 130ms 和 89 分 / TBT 340ms；三次 LCP 均约 2.4s，CLS 均为 0，不将单次最高分当作稳定承诺。全部原始报告保存在 qa/v2/，汇总为 performance-runs.json，最后的对照报告为 lighthouse-comparison.report.*。这是实验室结果，真实用户 INP 未采集，TBT 不代表 INP。
 
 WebKit 27.2 浏览器下载完成，但缺少系统运行库，未能执行 Safari 验证；没有 iQOO、真实 iPhone、内置浏览器或中国大陆网络实测。没有生产发布。生产仓库 SHA 只读检查为 06d068d422a027fb9b7f430d3e361ebdaab31e1b。
 

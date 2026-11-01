@@ -1,10 +1,11 @@
+import { loadStoryFiles } from "./story-files.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { validateStory } from "../src/story-schema.ts";
-const privateStory = JSON.parse(
-  readFileSync("stories/private/story.json", "utf8"),
-);
-const demo = JSON.parse(readFileSync("stories/demo/story.json", "utf8"));
+const privateStory = loadStoryFiles("stories/private/story.json");
+const demo = loadStoryFiles("stories/demo/story.json");
 assert.equal(validateStory(privateStory).weekend.dateISO, "2026-10-28");
 assert.equal(validateStory(demo).demo, true);
 for (const change of [
@@ -46,3 +47,27 @@ for (const change of [
   change(s);
   assert.throws(() => validateStory(s));
 }
+
+const directory = mkdtempSync(join(tmpdir(), "story-files-"));
+try {
+  const file = join(directory, "story.json");
+  writeFileSync(
+    file,
+    JSON.stringify({ ...demo, letterFile: "../private/letter.json" }),
+  );
+  assert.throws(() => loadStoryFiles(file), /letterFile/);
+  writeFileSync(file, JSON.stringify({ ...demo, letterFile: "letter.json" }));
+  writeFileSync(
+    join(directory, "letter.json"),
+    JSON.stringify({
+      intro: demo.letterIntro,
+      paragraphs: demo.letter,
+      blessing: demo.blessing,
+    }),
+  );
+  assert.deepEqual(loadStoryFiles(file).letter, demo.letter);
+  assert.equal(loadStoryFiles(file).weekend, undefined);
+} finally {
+  rmSync(directory, { recursive: true, force: true });
+}
+console.log("Separated letter assembly and cross-directory rejection passed.");

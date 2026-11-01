@@ -16,9 +16,9 @@
 | src/StoryMotion.tsx | 统一动效原语、静态回退、滚动阻尼、双卡状态 |
 | src/style.css / src/tokens.css | 移动版式、320px / 短屏、稳定高度、主题与结束节奏 |
 | src/main.tsx | 缺少观察 API 的静态启动 |
-| src/story.ts / src/story-schema.ts | 选择单一故事、类型与运行时校验 |
-| stories/private/story.json | 原私人内容与独立附言 |
-| stories/demo/story.json | 明确虚构的友情模板 |
+| src/story.ts / src/story-schema.ts / scripts/story-files.ts | 选择单一故事、独立信件装配、类型与运行时校验 |
+| stories/private/story.json / letter.json | 原私人资料、独立信件与附言 |
+| stories/demo/story.json / letter.json | 明确虚构的友情模板，资料与信件分开 |
 | vite.config.ts / index.html | 独立构建、按引用媒体、分享元数据、字体缺字拦截 |
 | public/fonts/*.woff2 / src/font-coverage.json | 新中文子集与覆盖表 |
 | public/demo-preview.png | 演示分享图 |
@@ -43,7 +43,7 @@
 
 详细结果见 QA.md。已运行 V1 基线页面与动效测试、TypeScript、两个生产构建、配置校验、两套主题下七组视口的私人 / 演示页面测试、axe、真实动效验证、最简 / 长文案 / 强制主题构建、演示隐私扫描、字体检查与开发服务检查。还运行了与 CI 相同的本地 check-all 编排。结果 JSON 与截图在 qa/v1/、qa/v2/，均保留在本地交付包中。
 
-实验室 Lighthouse 移动模拟：Performance 96，Accessibility / Best Practices / SEO 100，LCP 2.4s、FCP 1.6s、CLS 0、TBT 130ms。真实用户 INP 未测得；没有将 TBT 作为 INP。
+实验室 Lighthouse 移动模拟：Performance 96，Accessibility / Best Practices / SEO 100，LCP 2.4s、FCP 1.6s、CLS 0、TBT 120ms。同环境顺序对照 V1 为 98 分 / LCP 2.2s / TBT 70ms；V2 其他独立测量有 89–96 分、TBT 130–340ms 的波动，全部报告保留。真实用户 INP 未测得；没有将 TBT 作为 INP。
 
 WebKit 已下载，但机器缺少 GTK4、Graphene、Harfbuzz ICU 等运行库，且没有可用的 sudo；Safari 验证没有执行通过。未进行 iQOO / OriginOS / Android 17 真机、真实 iPhone、微信 / QQ / 抖音内置浏览器和中国大陆网络测试，仍需设备验收。浏览器截图和模拟触摸不能替代真机滚动性能结论。
 

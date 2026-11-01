@@ -47,7 +47,7 @@ https://jiangjinzhou01-ctrl.github.io/symmetrical-carnival/phone-to-today/
 
 ## 定制交付
 
-复制 `stories/demo/story.json` 到 `customers/<客户代号>/story.json`，修改配置与授权图片即可，不改 React 组件。
+复制整个 `stories/demo/` 到 `customers/<客户代号>/`。`story.json` 管理资料与章节，`letter.json` 单独保存信件与附言，授权图片放在 `media/`；不改 React 组件。
 
 ```bash
 STORY_FILE=customers/client-001/story.json \

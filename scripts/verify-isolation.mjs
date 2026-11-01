@@ -1,10 +1,11 @@
+import { loadStoryFiles } from "./story-files.ts";
 import assert from "node:assert/strict";
 import { readFile, readdir, writeFile, mkdir, rm } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { createServer } from "node:http";
 import { extname, resolve } from "node:path";
 import { chromium } from "@playwright/test";
-const demo = JSON.parse(await readFile("stories/demo/story.json", "utf8"));
+const demo = loadStoryFiles("stories/demo/story.json");
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
   args: ["--no-sandbox"],

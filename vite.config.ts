@@ -3,12 +3,17 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { validateStory } from "./src/story-schema.ts";
+import { loadStoryFiles } from "./scripts/story-files.ts";
 
 const storyFile = resolve(
   process.env.STORY_FILE || "stories/private/story.json",
 );
-const story = validateStory(JSON.parse(readFileSync(storyFile, "utf8")));
+const story = loadStoryFiles(storyFile);
+const letterName = JSON.parse(readFileSync(storyFile, "utf8")).letterFile;
+const inputs = [
+  storyFile,
+  ...(letterName ? [resolve(storyFile, "../", letterName)] : []),
+];
 const coverage = new Set<number>(
   JSON.parse(readFileSync("src/font-coverage.json", "utf8")),
 );
@@ -52,7 +57,7 @@ export default defineConfig({
           return `export default ${JSON.stringify(story)}`;
       },
       configureServer(server) {
-        server.watcher.add(storyFile);
+        server.watcher.add(inputs);
         server.middlewares.use((req, res, next) => {
           const name = decodeURIComponent((req.url || "").split("?")[0])
             .replace(server.config.base, "")
@@ -71,13 +76,19 @@ export default defineConfig({
                 ? "image/svg+xml"
                 : name.endsWith(".png")
                   ? "image/png"
-                  : "text/plain",
+                  : /\.jpe?g$/i.test(name)
+                    ? "image/jpeg"
+                    : name.endsWith(".avif")
+                      ? "image/avif"
+                      : name.endsWith(".gif")
+                        ? "image/gif"
+                        : "text/plain",
           );
           res.end(readFileSync(file));
         });
       },
       handleHotUpdate(ctx) {
-        if (ctx.file === storyFile) ctx.server.restart();
+        if (inputs.includes(ctx.file)) ctx.server.restart();
       },
       transformIndexHtml(html) {
         return html

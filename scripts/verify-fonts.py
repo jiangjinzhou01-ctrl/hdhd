@@ -12,7 +12,11 @@ def strings(value):
         for item in value: yield from strings(item)
     elif isinstance(value, dict):
         for item in value.values(): yield from strings(item)
-chars = set(''.join(strings(json.loads(story.read_text()))))
+data = json.loads(story.read_text())
+text = ''.join(strings(data))
+if data.get('letterFile'):
+    text += ''.join(strings(json.loads((story.parent / data['letterFile']).read_text())))
+chars = set(text)
 # Verify Chinese and meaningful punctuation; ASCII paths and control characters are not typography.
 chars = {ord(c) for c in chars if '\u3000' <= c <= '\u9fff' or c in '。，“”‘’、—…'}
 for file in (root / 'public/fonts').glob('*.woff2'):

@@ -7,10 +7,13 @@
 ```text
 stories/private/story.json      原私人故事（已在原公开源码存在，完整保留）
 stories/demo/story.json         可公开的虚构示例
-customers/client-001/story.json 新客户配置，Git 忽略
+customers/client-001/story.json 新客户资料与章节配置，Git 忽略
+customers/client-001/letter.json 独立信件与附言，Git 忽略
 customers/client-001/media/     新客户授权素材，Git 忽略
 dist-v2/<id>/                  该故事独立构建，Git 忽略
 ```
+
+`scripts/story-files.ts` 仅在构建时读取 `letterFile` 指向的同目录信件，将 `intro / paragraphs / blessing / postscript` 合成为页面数据。源 JSON 不进入公开成品，媒体仍单独管理。复制模板时请复制整个目录。
 
 `src/story-schema.ts` 提供完整类型与运行时校验，Vite 加载配置时即校验。无效必填项、错误日期、不安全媒体路径会明确报错；无内容的可选章节省略，超长内容自然换行。不得用中文逗号、学校名或英文祝福来拆分客户内容。
 
@@ -31,7 +34,8 @@ dist-v2/<id>/                  该故事独立构建，Git 忽略
 | meeting | 原城市、目的城市、真实见面内容 |
 | events | 日期与事件标签，在相见章节展示，不伪造经历 |
 | surprise | 任意小惊喜；mark 可省略，不必使用金额或数字 |
-| letterIntro / letter | 信件开头与段落数组；段落可以复制选择 |
+| letterFile | 指向同目录 `letter.json`，单独保存 intro / paragraphs / blessing / postscript |
+| letterIntro / letter | 合成后的信件开头与段落数组；段落可以复制选择 |
 | blessing | `{text, emphasis?}` 分段强调，不依赖特定学校或英文 |
 | weekend | 可选附言，独立日期、标题与正文 |
 | share | 分享标题、文字、可选封面相对路径 |
@@ -39,7 +43,7 @@ dist-v2/<id>/                  该故事独立构建，Git 忽略
 
 隐藏章节：删除字段，或设为 `null` / `{}`。在 JSON 中不要填写 `undefined`。空主题数组省略通话章节。没有相见章节时，小惊喜仍可独立显示；所有可选章节关闭时开场直接进入信件。
 
-图片字段使用 `{src, alt, mobile?, dark?, darkMobile?}`。路径相对配置旁 `media/`；如无客户素材，回退查找 `public/` 的已授权共享意象。构建时缺少文件会报错；运行时加载失败使用稳定底色与文字降级。图片不是聊天记录或合照，演示静物的 alt 已说明意象性质。
+图片字段使用 `{src, alt, mobile?, dark?, darkMobile?}`。文件名使用英文、数字与连字符，路径相对配置旁 `media/`；如无客户素材，回退查找 `public/` 的已授权共享意象。构建时缺少文件会报错；运行时加载失败使用稳定底色与文字降级。图片不是聊天记录或合照，演示静物的 alt 已说明意象性质。
 
 可修改同一静物的裁切，不能因此编造用户经历。通话时间是用户故事提供的意象，页面没有伪造电话界面、记录或在线状态。
 
