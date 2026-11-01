@@ -38,7 +38,7 @@ const escape = (s: string) =>
       ]!,
   );
 const media = [story.cover.art, story.night?.image].filter(Boolean);
-const names = new Set(["favicon.svg", "third-party-licenses.txt"]);
+const names = new Set(["favicon.svg", "third-party-licenses.txt", "fonts/OFL.txt"]);
 for (const image of media)
   for (const key of ["src", "mobile", "dark", "darkMobile"] as const)
     if (image?.[key]) names.add(image[key]);
@@ -106,6 +106,7 @@ export default defineConfig({
           );
       },
       generateBundle() {
+        this.emitFile({ type: "asset", fileName: ".nojekyll", source: "" });
         // Only authorized media referenced by this build enters its output. Never copy customers/ wholesale.
         for (const name of names) {
           const customer = resolve(storyFile, "../media", name);

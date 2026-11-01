@@ -1,5 +1,7 @@
 # 电话那头，今天见。— V2
 
+更新：用户已明确授权部署，V2 已发布到原网站。详见 [生产部署记录](DEPLOYMENT_V2.md)。下文未部署说明保留为先前开发交付记录。
+
 在 V1 `edabe6e` 上升级的私人纪念网站。React 19、TypeScript、Vite 8、motion/react；保留浅灰 / 石墨黑主题、Today Sans 中文字体、原创金属日期和深夜静物意象。
 
 **V2 开发分支：`v2-development`。未发布、未替换现有 GitHub Pages。** 原 `dist/`、V1 的设计图和录屏保留；V2 独立输出到 `dist-v2/<故事 id>/`。
