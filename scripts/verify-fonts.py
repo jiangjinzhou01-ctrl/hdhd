@@ -1,7 +1,7 @@
 """Check selected story copy against both shipped weights, including all headings.
 Requires fontTools + Brotli. Build customer subsets first with subset-fonts.py.
 """
-import json, os, sys
+import json, os, sys, hashlib
 from pathlib import Path
 from fontTools.ttLib import TTFont
 root = Path(__file__).resolve().parent.parent
@@ -21,9 +21,18 @@ if data.get('letterFile'):
     text += ''.join(strings(json.loads((story.parent / letter_name).read_text())))
 chars = set(text)
 # Verify Chinese and meaningful punctuation; ASCII paths and control characters are not typography.
-chars = {ord(c) for c in chars if '\u3000' <= c <= '\u9fff' or c in '。，“”‘’、—…'}
+chars = {ord(c) for c in chars if '\u3000' <= c <= '\u9fff' or '\uff00' <= c <= '\uffef' or 0x20000 <= ord(c) <= 0x323af or c in '。，“”‘’、—…'}
+primary = set(json.loads((root/'src/font-coverage.json').read_text()))
+missing_points = sorted(chars-primary)
+upstream_sha = 'a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da'
+key = hashlib.sha256((json.dumps(missing_points,separators=(',',':'))+upstream_sha).encode()).hexdigest()[:20]
 for file in (root / 'public/fonts').glob('*.woff2'):
     available = TTFont(file).getBestCmap()
+    if missing_points:
+        weight = 'semibold' if 'semibold' in file.name else 'regular'
+        supplement = root/'.cache/story-fonts'/key/(weight+'.woff2')
+        if supplement.exists():
+            available.update(TTFont(supplement).getBestCmap())
     missing = sorted(chars - available.keys())
     if missing:
         print(file.name, 'missing:', ''.join(map(chr,missing))); sys.exit(1)

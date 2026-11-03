@@ -1,7 +1,7 @@
 {
   "name": "phone-to-today",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -18,7 +18,20 @@
     "dev:demo": "STORY_FILE=stories/demo/story.json VITE_BASE_PATH=/ npm run dev",
     "preview:demo": "STORY_FILE=stories/demo/story.json VITE_BASE_PATH=/ npm run preview",
     "test:config": "node scripts/verify-config.mjs",
-    "test:v2": "node scripts/verify-v2.mjs"
+    "test:v2": "node scripts/verify-v2.mjs",
+    "build:commercial": "node scripts/build-commercial.mjs",
+    "preview:commercial": "node scripts/preview-commercial.mjs",
+    "deploy:commercial": "node scripts/deploy-commercial.mjs",
+    "test:commercial:safety": "node scripts/test-commercial-safety.mjs",
+    "check:commercial": "node scripts/check-commercial.mjs",
+    "order:new": "node scripts/create-order.mjs",
+    "build:customer": "node scripts/build-customer.mjs",
+    "preview:customer": "node scripts/preview-customer.mjs",
+    "fonts:prepare": "node scripts/prepare-fonts.mjs",
+    "test:customer": "node scripts/test-customer.mjs",
+    "build:promo": "node scripts/build-promo.mjs",
+    "check:promo": "node scripts/check-promo.mjs",
+    "check:performance": "node scripts/check-commercial-performance.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

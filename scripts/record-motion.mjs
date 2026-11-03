@@ -1,10 +1,15 @@
 import { chromium } from "@playwright/test";
-import { mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import { verifyArtifact, BASE, MARKER, OUTPUT, sha256 } from "./lib/commercial.mjs";
 // Public recording defaults to the fictional demo. Private stories require an explicit TEST_URL.
 const url = process.env.TEST_URL || "http://localhost:4175/";
 const colorScheme = process.env.TEST_SCHEME || "light";
+const promo = process.env.RECORD_PROMO === "yes";
+const verified = promo ? await verifyArtifact() : null;
+if (promo && new URL(url).pathname !== `${BASE}demo/`)
+  throw Error("Promo recording requires the verified commercial demo subpath");
 const output = resolve(
   process.env.RECORD_DIR || `artifacts/demo-${colorScheme}`,
 );
@@ -24,6 +29,9 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 const marks = [];
+const cues = {};
+const resourceChecks = [];
+const elapsed = () => Number(((Date.now() - started) / 1000).toFixed(3));
 const started = Date.now();
 let last = 0;
 function mark(label) {
@@ -43,11 +51,24 @@ async function show(selector, hold = 1500) {
 }
 let video;
 try {
+  if (promo) page.on("response", (response) => {
+    resourceChecks.push((async () => {
+      const path = new URL(response.url()).pathname;
+      if (!path.startsWith(`${BASE}demo/`)) throw Error("Unexpected recording resource origin/path");
+      const name = `demo/${path.slice(`${BASE}demo/`.length) || "index.html"}`;
+      if (!response.ok() || sha256(await response.body()) !== verified.marker.files[name])
+        throw Error(`Recording resource does not match approved demo artifact: ${name}`);
+    })().then(() => null, (error) => error.message));
+  });
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(2200);
+  if (promo && (await page.locator(".demo-label").textContent()) !== "友情纪念 · 虚构演示")
+    throw Error("Only fictional demo footage is permitted");
   mark("01-cover");
+  cues.open = { start: elapsed() };
   await page.locator(".enter-button").tap();
-  await page.waitForTimeout(1600);
+  await page.waitForTimeout(promo ? 2000 : 1600);
+  cues.open.end = elapsed();
   mark("02-answer-and-enter");
   await show(".night-feature", 1600);
   await page.locator(".theme-buttons button").nth(1).tap();
@@ -57,13 +78,17 @@ try {
   mark("03-memory-and-photograph");
   await show("#duo .chapter-heading", 1300);
   await show(".duo-stage", 1500);
+  cues.duo = { start: elapsed() - 0.5 };
   await page.locator(".ready-button").tap();
   await page.waitForTimeout(1100);
   await page.locator(".ready-button").tap();
   await page.waitForTimeout(950);
+  cues.duo.end = elapsed();
   mark("04-together-and-return");
+  cues.city = { start: elapsed() };
   await show("#meeting-title", 1400);
   await show(".arrival-poster", 1700);
+  cues.city.end = elapsed();
   mark("05-cities");
   if (await page.locator(".small-surprise").count()) {
     await show(".small-surprise", 1000);
@@ -71,6 +96,7 @@ try {
     await page.waitForTimeout(700);
     mark("06-small-detail");
   }
+  cues.letter = { start: elapsed() };
   await show("#letter-title", 1400);
   for (const p of await page.locator(".letter-body > p").all()) {
     await p.evaluate((n) =>
@@ -79,10 +105,13 @@ try {
     await page.waitForTimeout(1500);
   }
   await show(".final-blessing", 1900);
+  cues.letter.end = elapsed();
   mark("07-letter");
   if (await page.locator("#weekend-note").count())
     await show("#weekend-note", 1600);
-  await show(".story-ending", 1500);
+  cues.ending = { start: elapsed() };
+  await show(".story-ending", promo ? 2100 : 1500);
+  cues.ending.end = elapsed();
   mark("08-ending");
   video = page.video();
   await context.close();
@@ -90,6 +119,8 @@ try {
   const raw = resolve(output, "full-mobile.webm");
   await video.saveAs(raw);
   if (original !== raw) await rm(original, { force: true });
+  const failures = (await Promise.all(resourceChecks)).filter(Boolean);
+  if (failures.length) throw Error(failures.join("\n"));
   await writeFile(
     resolve(output, "shots.json"),
     JSON.stringify(
@@ -98,6 +129,15 @@ try {
         colorScheme,
         viewport: { width: 390, height: 844 },
         source: "real Playwright browser interaction recording",
+        cues,
+        provenance: promo ? { schema: 1, fictionalDemo: true,
+          sourceSHA: verified.marker.sourceSHA,
+          sourceDirty: verified.marker.sourceDirty,
+          buildManifestSHA256: sha256(await readFile(resolve(OUTPUT, MARKER))),
+          demoFiles: Object.fromEntries(Object.entries(verified.marker.files).filter(([name]) => name.startsWith("demo/"))),
+          videoSHA256: sha256(await readFile(raw)),
+          verifiedResourceCount: resourceChecks.length,
+          note: "Every actual response was checked against the isolated commercial build. No screenshot synthesis." } : null,
         shots: marks,
       },
       null,

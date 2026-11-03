@@ -1,0 +1,87 @@
+import assert from 'node:assert/strict';
+import { cp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { chromium } from '@playwright/test';
+import { checkOrder, CHECKS } from './lib/order.mjs';
+import { codepoint, loadSupplement } from './lib/font-support.mjs';
+import { prepareFonts } from './prepare-fonts.mjs';
+import { preview } from './lib/preview.mjs';
+const fixture='tests/fixtures/trial-order';
+const result=await checkOrder(fixture);
+const passed=[];
+await assert.rejects(checkOrder(fixture,{delivery:true}),/Delivery blocked/);
+await assert.rejects(checkOrder(fixture,{publicRelease:true}),/Public packaging blocked/);
+passed.push('pending release and unconfirmed final copy cannot become a delivery/public package');
+execFileSync('node',['scripts/build-customer.mjs',`--order=${fixture}`],{stdio:'pipe'});
+const font=loadSupplement(result.story);
+assert(font && font.missing.length>0);
+assert(font.missing.includes('栀'.codePointAt(0)));
+assert(font.report.files.regular.bytes<250000 && font.report.files.semibold.bytes<250000);
+passed.push('new Han characters automatically subset, encoded cmap verified for both weights');
+await assert.rejects(prepareFonts({...result.story,friend:String.fromCodePoint(0x31350)}),/cannot render|Unsupported glyphs/);
+passed.push('unsupported supplementary-plane Han blocks delivery instead of silent system fallback');
+const temporary='customers/mg-qa7x';
+await cp(fixture,temporary,{recursive:true});
+try {
+  const config=JSON.parse(await readFile(`${temporary}/story.json`,'utf8'));
+  config.id='mg-qa7x'; await writeFile(`${temporary}/story.json`,JSON.stringify(config));
+  const order={...result.order,code:'mg-qa7x'};
+  await writeFile(`${temporary}/order.json`,JSON.stringify({...order,media:[{...order.media[0],authorizationConfirmed:false}]}));
+  await assert.rejects(checkOrder(temporary),/authorization/);
+  await writeFile(`${temporary}/order.json`,JSON.stringify({...order,media:[...order.media,order.media[0]]}));
+  await assert.rejects(checkOrder(temporary),/At most two/);
+  const confirmed={...order,publicRelease:'granted',finalConfirmed:true,checks:Object.fromEntries(CHECKS.map(k=>[k,true])),fontReviewedCodepoints:font.missing.map(codepoint)};
+  await writeFile(`${temporary}/order.json`,JSON.stringify({...confirmed,media:[{...order.media[0],containsIdentifiableMinor:true},order.media[1]]}));
+  await assert.rejects(checkOrder(temporary,{delivery:true,publicRelease:true}),/guardian/);
+  await writeFile(`${temporary}/order.json`,JSON.stringify(confirmed));
+  assert((await checkOrder(temporary,{delivery:true,publicRelease:true})).order.finalConfirmed);
+  execFileSync('node',['scripts/build-customer.mjs',`--order=${temporary}`,'--delivery','--public'],
+    {stdio:'pipe',env:{...process.env,STORY_ORIGIN:'https://example.invalid'}});
+  passed.push('media authorization, two-image limit, guardian gate and explicit delivery checklist');
+  config.cover.headline='超长'.repeat(100);await writeFile(`${temporary}/story.json`,JSON.stringify(config));
+  await assert.rejects(checkOrder(temporary),/copy limit/);
+  passed.push('operational copy length checked using existing story schema');
+} finally { await rm(temporary,{recursive:true,force:true}); }
+const build=JSON.parse(await readFile('artifacts/orders/mg-q7m2x/build.json','utf8'));
+const server=await preview(build.output,build.base);
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
+await mkdir('artifacts/orders/mg-q7m2x/screens',{recursive:true});
+try {
+  for(const width of [320,390,1440]) {
+    const page=await browser.newPage({viewport:{width,height:width>768?1000:844},colorScheme:'light',reducedMotion:'reduce'});
+    const errors=[];const requested=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    page.on('response',r=>{if(r.status()>=400)errors.push(r.url());requested.push(r.url());});
+    await page.goto(server.url,{waitUntil:'networkidle'});
+    await page.addStyleTag({content:"body{font-family:'Today Sans',sans-serif !important}"});
+    await page.evaluate(()=>document.fonts.ready);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),width);
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
+    assert.equal(await page.locator('details').count(),0,'hidden surprise');
+    assert((await page.locator('body').innerText()).includes('栀夏'));
+    assert((await page.locator('body').innerText()).includes('棠舟'));
+    assert((await page.locator('body').innerText()).includes('青岛'));
+    assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'),result.story.share.title);
+    assert.equal(await page.locator('meta[property="og:image"]').getAttribute('content'),`${build.origin}${build.base}postcard.png`);
+    const links=await page.locator('nav a').evaluateAll(ns=>ns.map(n=>n.getAttribute('href')));
+    for(const href of links) assert.equal(await page.locator(href).count(),1);
+    assert(!/罗琛尧|娄底三中|周末记得陪我聊天/.test(await page.locator('body').innerText()));
+    await page.locator('#letter').evaluate(n=>n.scrollIntoView({behavior:'instant'}));
+    await page.evaluate(()=>document.fonts.ready);
+    assert(requested.some(url=>url.endsWith('/fonts/order-regular.woff2')));
+    assert(requested.some(url=>url.endsWith('/fonts/order-semibold.woff2')));
+    await page.locator('#letter').screenshot({path:`artifacts/orders/mg-q7m2x/screens/letter-${width}.png`});
+    await page.locator('#beginning').evaluate(n=>n.scrollIntoView({behavior:'instant'}));
+    await page.screenshot({path:`artifacts/orders/mg-q7m2x/screens/cover-${width}.png`});
+    assert.deepEqual(errors,[]); await page.close();
+  }
+  passed.push('320/390/1440 independent preview, new names/date/cities/letter, dark theme, hidden scene navigation, actual font requests and OG metadata');
+  const html=await readFile(`${build.output}/index.html`,'utf8');assert(html.includes('fonts/order-regular.woff2'));
+  assert(!build.files.some(file=>file.includes('order.json')||file.includes('story.json')||file.includes('customers/')));
+  const tracked=execFileSync('git',['ls-files','customers'],{encoding:'utf8'}).trim();
+  assert.equal(tracked,'customers/README.md');
+  passed.push('only selected authorized media in output, customer source ignored by Git');
+  const report={passed,supplement:font.report,buildSeconds:build.seconds,timingScope:build.note};
+  await writeFile('artifacts/orders/mg-q7m2x/check.json',JSON.stringify(report,null,2));
+  console.log(JSON.stringify(report,null,2));
+} finally { await browser.close();await server.close(); }

@@ -1,3 +1,18 @@
+# Memory Gift V2.1 · 商业化试卖
+
+¥29.9「一份可以打开的回忆」：独立静态商品页 + 原 V2 虚构演示、授权订单检查、按订单中文补字、真实宣传录屏精剪及固定目录部署保护。
+
+```bash
+npm ci
+npm run build:commercial
+npm run preview:commercial
+# http://127.0.0.1:4180/symmetrical-carnival/memory-gift/
+```
+
+**本次没有商业生产发布。** 开发分支 `feature/memory-gift-trial-v2-1`，PR 目标 `v2-development`。完整接单、字体、视频、验收和生产授权/回退流程见 [COMMERCIAL.md](COMMERCIAL.md)，能力复用与基线见 [COMMERCIAL_AUDIT.md](COMMERCIAL_AUDIT.md)。原私人 V2 的历史记录如下。
+
+---
+
 # 电话那头，今天见。— V2
 
 更新：用户已明确授权部署，V2 已发布到原网站。详见 [生产部署记录](DEPLOYMENT_V2.md)。下文未部署说明保留为先前开发交付记录。
