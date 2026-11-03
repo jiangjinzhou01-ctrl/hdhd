@@ -1,0 +1,31 @@
+{
+  "code": "mg-q7m2x",
+  "media": [
+    {
+      "files": [
+        "still.svg"
+      ],
+      "authorizationConfirmed": true,
+      "containsIdentifiableMinor": false,
+      "guardianConsentConfirmed": false
+    },
+    {
+      "files": [
+        "postcard.png"
+      ],
+      "authorizationConfirmed": true,
+      "containsIdentifiableMinor": false,
+      "guardianConsentConfirmed": false
+    }
+  ],
+  "publicRelease": "pending",
+  "finalConfirmed": false,
+  "checks": {
+    "copy": false,
+    "media": false,
+    "layout": false,
+    "sharing": false,
+    "fonts": false
+  },
+  "fontReviewedCodepoints": []
+}

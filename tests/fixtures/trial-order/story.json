@@ -1,0 +1,105 @@
+{
+  "title": "栀夏与棠舟的海边来信 · 虚构试单",
+  "friend": "栀夏",
+  "date": "2027.04.16",
+  "dateISO": "2027-04-16",
+  "opening": "完全虚构的客户制作演练。全部人物、图片与经历均为模拟。",
+  "cover": {
+    "address": "栀夏，这封海边来信送给你。",
+    "headline": "把这一天，\n写成一封信。",
+    "memory": "蒹葭、潮声，还有并肩散步的我们。",
+    "gift": "愿每一次回望，都有温柔的风。",
+    "caption": "见面纪念",
+    "dateMark": "04.16",
+    "location": "青岛，生日纪念"
+  },
+  "night": {
+    "title": "普通的夜晚，\n因为你不同。",
+    "lead": "有些话，只有老朋友懂。",
+    "body": "虚构试单：我们在不同的城市生活，把相同的晚风写进信里。",
+    "themes": [
+      {
+        "label": "日常",
+        "lines": [
+          "每一阵海风，",
+          "都想与你分享。"
+        ],
+        "position": "70% center",
+        "caption": "聊聊日常。"
+      },
+      {
+        "label": "老地方",
+        "lines": [
+          "说起老地方，",
+          "还是会笑。"
+        ],
+        "position": "80% center",
+        "caption": "想起熟悉的街道。"
+      },
+      {
+        "label": "下次见",
+        "lines": [
+          "等下次见面，",
+          "慢慢聊。"
+        ],
+        "position": "60% center",
+        "caption": "把话留到见面。"
+      }
+    ],
+    "image": {
+      "src": "still.svg",
+      "alt": "自行绘制的纸张与海浪意象，无人物或私人信息，仅作授权模拟素材。"
+    },
+    "time": "23:00",
+    "caption": "一段普通的晚间闲聊。"
+  },
+  "duo": {
+    "title": "各自忙碌，\n依然并肩。",
+    "body": "虚构试单：在海边收集日常，留住一起散步的片段。",
+    "feedback": "栀夏与棠舟，仍然一起向前。",
+    "people": [
+      {
+        "name": "棠舟",
+        "caption": "寄信的人"
+      },
+      {
+        "name": "栀夏",
+        "caption": "收信的人"
+      }
+    ],
+    "caption": "把各自的日常，放到一起",
+    "idle": "有你在，就很熟悉。"
+  },
+  "meeting": {
+    "title": "好久不见，\n终于相见。",
+    "lead": "从苏州，到青岛。",
+    "body": "虚构试单：生日这天，我们沿着海边慢慢走。",
+    "origin": "苏州",
+    "destination": "青岛",
+    "note": "让潮声，把祝福捎给你。"
+  },
+  "surprise": null,
+  "id": "mg-q7m2x",
+  "relationship": "生日纪念",
+  "theme": "dark",
+  "demo": true,
+  "navigation": {
+    "name": "海边来信 · 虚构试单",
+    "night": "回忆",
+    "meeting": "今天",
+    "letter": "写给你"
+  },
+  "share": {
+    "title": "栀夏与棠舟 · 海边来信（虚构试单）",
+    "text": "一次独立订单制作演练，不是真实客户案例。",
+    "image": "postcard.png"
+  },
+  "ending": "让这阵海风，留在信里。",
+  "events": [
+    {
+      "dateISO": "2027-04-16",
+      "label": "青岛生日散步（虚构）"
+    }
+  ],
+  "letterFile": "letter.json"
+}

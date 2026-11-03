@@ -13,3 +13,6 @@ customers/*
 qa/v2/
 qa/v1/
 artifacts/
+
+dist-commercial/
+.cache/

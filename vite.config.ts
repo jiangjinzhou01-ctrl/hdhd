@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadStoryFiles } from "./scripts/story-files.ts";
+import { loadSupplement, codepoint } from "./scripts/lib/font-support.mjs";
 
 const storyFile = resolve(
   process.env.STORY_FILE || "stories/private/story.json",
@@ -14,21 +15,9 @@ const inputs = [
   storyFile,
   ...(letterName ? [resolve(storyFile, "../", letterName)] : []),
 ];
-const coverage = new Set<number>(
-  JSON.parse(readFileSync("src/font-coverage.json", "utf8")),
-);
-const missing = [
-  ...new Set(
-    [...JSON.stringify(story)].filter(
-      (char) =>
-        /[\u3000-\u9fff]/u.test(char) && !coverage.has(char.codePointAt(0)!),
-    ),
-  ),
-];
-if (missing.length)
-  throw Error(
-    `Story has uncovered Chinese glyphs: ${missing.join("")}. Rebuild fonts with STORY_FILE and scripts/subset-fonts.py before delivery.`,
-  );
+const supplement = loadSupplement(story);
+const base = process.env.VITE_BASE_PATH || "/symmetrical-carnival/phone-to-today/";
+if (supplement) console.warn(`Supplemental font glyphs require delivery review: ${supplement.missing.map(codepoint).join(", ")}`);
 const escape = (s: string) =>
   s.replace(
     /[&<>"']/g,
@@ -103,10 +92,18 @@ export default defineConfig({
           .replace(
             "<!-- story-theme -->",
             `<script>document.documentElement.dataset.theme=${JSON.stringify(story.theme)}</script>`,
+          )
+          .replace(
+            "</head>",
+            (supplement ? `<style>${[400, 600].map((weight, i) => `@font-face{font-family:'Today Sans';font-weight:${weight};font-style:normal;font-display:swap;src:url('${base}fonts/order-${i ? "semibold" : "regular"}.woff2') format('woff2');unicode-range:${supplement.missing.map(codepoint).join(",")}}`).join("")}</style>` : "") + "</head>",
           );
       },
       generateBundle() {
         this.emitFile({ type: "asset", fileName: ".nojekyll", source: "" });
+        if (supplement) for (const weight of ["regular", "semibold"]) this.emitFile({
+          type: "asset", fileName: `fonts/order-${weight}.woff2`,
+          source: readFileSync(resolve(supplement.directory, `${weight}.woff2`)),
+        });
         // Only authorized media referenced by this build enters its output. Never copy customers/ wholesale.
         for (const name of names) {
           const customer = resolve(storyFile, "../media", name);

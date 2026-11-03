@@ -33,3 +33,13 @@ WebP 文件沿用浅色版本的裁剪范围，桌面宽 1440px、约 30KB，手
 新增汉字继续使用 Noto Sans SC 2.004 / SIL OFL 1.1；Today Sans 的 400 / 600 子集已重新生成，含私人版、演示版和新界面文字。`src/font-coverage.json` 用于构建时缺字检查。字体版权、OFL 原文与既有第三方声明均保留；本轮没有添加运行时依赖。
 
 V2 的媒体构建按引用收集，`public/` 不再整体复制进成品。客户授权图片置于本地忽略目录 `customers/<id>/media/`，不要上传到公开源码。演示录屏使用真实浏览器和 FFmpeg 转码，位于本地 `artifacts/demo-light/` 与 `artifacts/demo-dark/`；不能将私人录屏当作公开广告。
+
+## V2.1 商业页、虚构试单与补充字体
+
+商业页纸张礼物意象、m· 字标由本站 HTML/CSS 原创绘制，页面明确标为意象；真实预览使用既有 public/demo-preview.png。没有引入品牌素材、外部图库、真实客户照片或背景音乐。商品页使用设备中文系统字体，无额外中文字体下载。
+
+测试夹具 `tests/fixtures/trial-order/media/still.svg` 是自行绘制的纸张/海浪意象；`postcard.png` 由浏览器渲染本站原创文字排版生成，人物、日期、城市均为虚构模拟，不是客户照片。仅用于自动化演练。
+
+新字补充字体仍来自 Noto Sans SC 2.004 / SIL OFL 1.1。固定上游提交：`2894aab31764f10f29c421bdfd2340d3b382d384`，字体 SHA-256：`a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`；URL 与生成过程记录在 scripts/lib/font-support.mjs、prepare-order-fonts.py。原字体只缓存到忽略的 .cache/，不进入网页。补充子集内部重命名 Today Order，保留版权与许可证；CSS 在缺字 Unicode 范围内注册为 Today Sans 的补充字形。没有删除或替换原 Today Sans 字体、覆盖表、OFL 与 licenses/NotoSansSC-OFL.txt。
+
+宣传字幕使用执行环境安装的 Noto Sans CJK（SIL OFL，系统版权记录位于 /usr/share/doc/fonts-noto-cjk/copyright）；不分发系统字体文件，不添加音乐。所有视频来自经过商业产物哈希校验的真实虚构演示浏览器响应与操作。

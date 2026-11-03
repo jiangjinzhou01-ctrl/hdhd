@@ -51,16 +51,9 @@ dist-v2/<id>/                  该故事独立构建，Git 忽略
 
 使用 Noto Sans SC 2.004 的 OFL 子集 Today Sans，原版权与许可证保留。普通 npm 构建不联网下载字体，也不依赖 Python。
 
-Vite 对所选故事的全部中文检查 `src/font-coverage.json`。出现缺字时**构建报错**，避免标题悄悄回退。拿到新增授权文案后，用原版 2.004 可变字体重新生成：
+Vite 保留 `src/font-coverage.json` 检查，并检查扩展区汉字。V2.1 普通订单推荐运行 `npm run build:customer -- --order=customers/<随机代号>`：自动生成只含所选故事缺字的补充 WOFF2；校验实际 cmap、哈希与字体体积，交付前明确复核新字。不会为一份订单覆盖全站原基础字体。
 
-```bash
-python -m pip install fonttools brotli
-STORY_FILE=customers/client-001/story.json \
-python scripts/subset-fonts.py /path/to/NotoSansSC-VF.ttf
-STORY_FILE=customers/client-001/story.json python scripts/verify-fonts.py
-```
-
-会更新两个 WOFF2 与覆盖表。初始版本与演示的全部中文已经验证覆盖。客户资料和完整原始字体不放进公开仓库。
+首次补字需要 Python 3、`python -m pip install -r scripts/font-requirements.txt` 和可下载固定版本字体的网络；缓存后可离线。上游不支持的字仍报错，不能静默回退或改姓名。字体授权来源、完整操作与限制见 [COMMERCIAL.md](COMMERCIAL.md)。原 `subset-fonts.py` 保留用于基础字库维护；不是普通接单必需步骤。
 
 ## 独立托管
 
@@ -76,3 +69,9 @@ npm run build
 仅源码由 GitHub 管理。客户资料可离线接收和本地构建，人工上传成品到已授权托管空间。Cloudflare Pages 适合静态发布；敏感内容必须搭配服务端或边缘层访问验证。本期没有实现密码保护、账号、数据库、支付、自动接单或客户后台，不能以随机链接冒充保护。
 
 交付前：核对所有姓名、日期、照片授权、章节、信件与附言；运行构建、字体校验、移动预览、减少动态与分享验证。公开宣传只录制演示版。照片的真实比例与构图仍需人工选裁切，本模板不会自动理解图片主体。
+
+## V2.1 试卖订单入口
+
+完整人工接单流程见 [COMMERCIAL.md](COMMERCIAL.md)。使用 `npm run order:new` 生成不含姓名或手机号的随机代号；原 story / letter 字段不变，本地 order.json 只记录授权与检查状态。公开发布须有明确同意、最终确认和必要监护等授权；新商业部署入口只发布固定虚构 demo，不接受客户故事。
+
+普通公开静态网站没有访问保密能力。客户源码与网页产物包含客户内容，均不能因为源 JSON 未复制就视作可安全公开。测试夹具为独立全新虚构故事，真实订单始终放入 Git 忽略的 customers/。

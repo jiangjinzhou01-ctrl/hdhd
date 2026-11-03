@@ -1,7 +1,7 @@
 name: Verify V2 stories
 on:
   push:
-    branches: [main, v2-development]
+    branches: [main, v2-development, feature/memory-gift-trial-v2-1]
   pull_request:
 permissions:
   contents: read
@@ -19,9 +19,47 @@ jobs:
       - run: npm run build
       - run: npm run build:demo
       - run: npx playwright install --with-deps chromium
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/font-requirements.txt
+      - name: Select installed Playwright browser
+        run: node -e 'require("fs").appendFileSync(process.env.GITHUB_ENV, "CHROMIUM_PATH=" + require("@playwright/test").chromium.executablePath() + "\n")'
       - run: node scripts/check-all.mjs
+      - run: npm run build:commercial
+      - run: npm run test:customer
+      - run: npm run check:commercial
+      - name: Install promo tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+      - name: Record actual fictional interactions and render promo
+        shell: bash
+        run: |
+          npm run preview:commercial > /tmp/memory-gift-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in {1..50}; do
+            if curl -fsS http://127.0.0.1:4180/symmetrical-carnival/memory-gift/ > /dev/null; then break; fi
+            sleep 0.2
+          done
+          RECORD_PROMO=yes TEST_URL=http://127.0.0.1:4180/symmetrical-carnival/memory-gift/demo/ npm run design:motion
+          npm run build:promo
+          npm run check:promo
+      - run: npm run check:performance
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: v2-verification
           path: qa/v2/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-gift-v2-1-delivery
+          include-hidden-files: true
+          path: |
+            dist-commercial/memory-gift/
+            artifacts/commercial/
+            artifacts/promo-light/
+            artifacts/orders/mg-q7m2x/
+            dist-v2/mg-q7m2x/
